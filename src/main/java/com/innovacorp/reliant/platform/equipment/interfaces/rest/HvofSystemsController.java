@@ -35,6 +35,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class HvofSystemsController {
     private final HvofSystemCommandService hvofSystemCommandService;
     private final MessageSource messageSource;
+    private final HvofSystemQueryService hvofSystemQueryService;
 
     public HvofSystemsController(HvofSystemCommandService hvofSystemCommandService, MessageSource messageSource, HvofSystemQueryService hvofSystemQueryService) {
         this.hvofSystemCommandService = hvofSystemCommandService;
@@ -55,14 +56,6 @@ public class HvofSystemsController {
         return ResponseEntityFromHvofSystemCommandResultAssembler.toResponseEntityFromResult(result, messageSource);
     }
 
-
-    private final HvofSystemQueryService hvofSystemQueryService;
-
-    public HvofSystemsController(HvofSystemCommandService hvofSystemCommandService, HvofSystemQueryService hvofSystemQueryService, MessageSource messageSource) {
-        this.hvofSystemCommandService = hvofSystemCommandService;
-        this.hvofSystemQueryService = hvofSystemQueryService;
-        this.messageSource = messageSource;
-    }
 
     @Operation(summary = "Get an HVOF system by id")
     @ApiResponses(value = {
