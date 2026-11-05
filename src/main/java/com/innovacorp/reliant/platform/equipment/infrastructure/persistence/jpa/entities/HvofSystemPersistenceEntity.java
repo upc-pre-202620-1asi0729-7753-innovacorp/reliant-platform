@@ -1,4 +1,7 @@
-package com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.entities;
+﻿package com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.entities;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.FuelType;
 import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.HvofSystemCode;
@@ -46,4 +49,9 @@ public class HvofSystemPersistenceEntity extends AuditableAbstractPersistenceEnt
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private HvofSystemStatus status;
-}
+
+    @OneToMany(mappedBy = "hvofSystem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<HvofSubsystemPersistenceEntity> subsystems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "hvofSystem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<ControllerPersistenceEntity> controllers = new ArrayList<>();}
