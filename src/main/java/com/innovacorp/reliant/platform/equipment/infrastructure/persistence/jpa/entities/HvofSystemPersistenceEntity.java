@@ -1,4 +1,4 @@
-﻿package com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.entities;
+package com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.entities;
 
 import java.util.ArrayList;
 import java.util.List;

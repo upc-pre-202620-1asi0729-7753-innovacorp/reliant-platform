@@ -1,4 +1,4 @@
-﻿package com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.embeddables;
+package com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.embeddables;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

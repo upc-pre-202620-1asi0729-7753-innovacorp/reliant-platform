@@ -1,4 +1,4 @@
-﻿package com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.assemblers;
+package com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.assemblers;
 
 import com.innovacorp.reliant.platform.equipment.domain.model.aggregates.HvofSystem;
 import com.innovacorp.reliant.platform.equipment.domain.model.entities.Controller;

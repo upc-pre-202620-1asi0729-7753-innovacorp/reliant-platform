@@ -1,4 +1,4 @@
-﻿package com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.entities;
+package com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.entities;
 
 import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.DeviceType;
 import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.Protocol;
