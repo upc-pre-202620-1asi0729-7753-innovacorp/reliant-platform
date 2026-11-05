@@ -4,7 +4,6 @@ import com.innovacorp.reliant.platform.equipment.domain.model.commands.RegisterH
 import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.FuelType;
 import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.HvofSystemCode;
 import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.HvofSystemStatus;
-import com.innovacorp.reliant.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
 import jakarta.persistence.*;
 import lombok.Getter;

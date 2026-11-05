@@ -5,7 +5,6 @@ import com.innovacorp.reliant.platform.equipment.application.commandservices.Hvo
 import com.innovacorp.reliant.platform.equipment.domain.model.aggregates.HvofSystem;
 import com.innovacorp.reliant.platform.equipment.domain.model.commands.RegisterHvofSystemCommand;
 import com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.repositories.HvofSystemRepository;
-import com.innovacorp.reliant.platform.shared.application.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;

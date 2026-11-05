@@ -2,7 +2,6 @@ package com.innovacorp.reliant.platform.equipment.interfaces.rest.transform;
 
 import com.innovacorp.reliant.platform.equipment.application.commandservices.HvofSystemCommandFailure;
 import com.innovacorp.reliant.platform.equipment.domain.model.aggregates.HvofSystem;
-import com.innovacorp.reliant.platform.shared.application.result.Result;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
