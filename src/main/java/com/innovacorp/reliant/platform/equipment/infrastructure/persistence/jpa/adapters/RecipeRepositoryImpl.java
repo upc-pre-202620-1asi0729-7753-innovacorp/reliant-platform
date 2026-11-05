@@ -25,12 +25,8 @@ public class RecipeRepositoryImpl implements RecipeRepository {
 
     @Override
     public Recipe save(Recipe recipe) {
-        boolean isNew = recipe.getId() == null;
         var savedEntity = persistenceRepository.save(RecipePersistenceAssembler.toPersistenceFromDomain(recipe));
         var saved = RecipePersistenceAssembler.toDomainFromPersistence(savedEntity);
-        if (isNew) {
-            saved.onCreated();
-        }
         // Events registered before save (e.g. publish()) live on the incoming aggregate; publish both.
         domainEventPublisher.publishAndClearEvents(recipe);
         domainEventPublisher.publishAndClearEvents(saved);

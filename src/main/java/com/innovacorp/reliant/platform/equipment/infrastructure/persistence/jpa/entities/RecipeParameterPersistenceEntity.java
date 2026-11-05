@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "recipe_parameters", uniqueConstraints = @UniqueConstraint(name = "uk_recipe_parameter", columnNames = {"recipe_id", "parameter}))
+@Table(name = "recipe_parameters", uniqueConstraints = @UniqueConstraint(name = "uk_recipe_parameter", columnNames = {"recipe_id", "parameter"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,3 +35,4 @@ public class RecipeParameterPersistenceEntity extends AuditableAbstractPersisten
     @Column(name = "unit_category", nullable = false, length = 20)
     private UnitCategory unitCategory;
 }
+
