@@ -7,8 +7,6 @@ import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetHvofSys
 import com.innovacorp.reliant.platform.equipment.interfaces.rest.resources.HvofSystemResource;
 import com.innovacorp.reliant.platform.equipment.interfaces.rest.resources.RegisterHvofSystemResource;
 import com.innovacorp.reliant.platform.equipment.interfaces.rest.transform.RegisterHvofSystemCommandFromResourceAssembler;
-import com.innovacorp.reliant.platform.equipment.interfaces.rest.transform.ResponseEntityFromHvofSystemCommandResultAssembler;
-import com.innovacorp.reliant.platform.equipment.interfaces.rest.transform.ResponseEntityFromHvofSystemQueryResultAssembler;
 import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

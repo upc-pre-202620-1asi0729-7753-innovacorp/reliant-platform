@@ -2,9 +2,7 @@ package com.innovacorp.reliant.platform.equipment.application.internal.commandse
 
 import com.innovacorp.reliant.platform.equipment.application.commandservices.HvofSystemCommandFailure;
 import com.innovacorp.reliant.platform.equipment.application.commandservices.HvofSystemCommandService;
-import com.innovacorp.reliant.platform.equipment.domain.model.aggregates.HvofSystem;
 import com.innovacorp.reliant.platform.equipment.domain.model.commands.RegisterHvofSystemCommand;
-import com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.repositories.HvofSystemRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;

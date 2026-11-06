@@ -1,10 +1,8 @@
 package com.innovacorp.reliant.platform.equipment.application.internal.queryservices;
 
 import com.innovacorp.reliant.platform.equipment.application.queryservices.HvofSystemQueryService;
-import com.innovacorp.reliant.platform.equipment.domain.model.aggregates.HvofSystem;
 import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetAllHvofSystemsByOrganizationIdQuery;
 import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetHvofSystemByIdQuery;
-import com.innovacorp.reliant.platform.equipment.infrastructure.persistence.jpa.repositories.HvofSystemRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

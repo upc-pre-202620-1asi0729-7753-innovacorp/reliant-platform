@@ -1,6 +1,5 @@
 package com.innovacorp.reliant.platform.equipment.application.queryservices;
 
-import com.innovacorp.reliant.platform.equipment.domain.model.aggregates.HvofSystem;
 import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetAllHvofSystemsByOrganizationIdQuery;
 import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetHvofSystemByIdQuery;
 
