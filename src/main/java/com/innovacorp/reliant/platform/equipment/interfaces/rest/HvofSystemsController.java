@@ -6,72 +6,86 @@ import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetAllHvof
 import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetHvofSystemByIdQuery;
 import com.innovacorp.reliant.platform.equipment.interfaces.rest.resources.HvofSystemResource;
 import com.innovacorp.reliant.platform.equipment.interfaces.rest.resources.RegisterHvofSystemResource;
+import com.innovacorp.reliant.platform.equipment.interfaces.rest.transform.HvofSystemResourceFromEntityAssembler;
 import com.innovacorp.reliant.platform.equipment.interfaces.rest.transform.RegisterHvofSystemCommandFromResourceAssembler;
+import com.innovacorp.reliant.platform.shared.application.result.ApplicationError;
 import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
+import com.innovacorp.reliant.platform.shared.interfaces.rest.transform.ProblemDetailFromApplicationErrorAssembler;
+import com.innovacorp.reliant.platform.shared.interfaces.rest.transform.ResponseEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
-import org.springframework.http.ProblemDetail;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
-@Slf4j
+/**
+ * REST controller that exposes HVOF system resources.
+ */
 @RestController
-@RequestMapping(value = "/api/v1/hvof-systems", produces = APPLICATION_JSON_VALUE)
-@Tag(name = "HVOF Systems", description = "Endpoints for HVOF systems")
+@RequestMapping(value = "/api/v1/hvof-systems", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "HVOF Systems", description = "HVOF system management endpoints")
 public class HvofSystemsController {
     private final HvofSystemCommandService hvofSystemCommandService;
-    private final MessageSource messageSource;
     private final HvofSystemQueryService hvofSystemQueryService;
 
-    public HvofSystemsController(HvofSystemCommandService hvofSystemCommandService, MessageSource messageSource, HvofSystemQueryService hvofSystemQueryService) {
+    public HvofSystemsController(HvofSystemCommandService hvofSystemCommandService, HvofSystemQueryService hvofSystemQueryService) {
         this.hvofSystemCommandService = hvofSystemCommandService;
-        this.messageSource = messageSource;
         this.hvofSystemQueryService = hvofSystemQueryService;
     }
 
-    @Operation(summary = "Register an HVOF system", description = "Registers an HVOF system for an organization; the code must be unique within the organization")
+    @PostMapping
+    @Operation(
+            summary = "Register an HVOF system",
+            description = "Registers a thermal spray system owned by a recuperation supplier organization."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "HVOF system registered", content = @Content(schema = @Schema(implementation = HvofSystemResource.class))),
-            @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "409", description = "Conflict - code already registered for the organization", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "409", description = "Conflict - code already used in the organization")
     })
-    @PostMapping
-    public ResponseEntity<?> registerHvofSystem(@Valid @RequestBody RegisterHvofSystemResource resource) {
-        log.debug("POST /api/v1/hvof-systems – organizationId={}, code={}", resource.organizationId(), resource.code());
-        var result = hvofSystemCommandService.handle(RegisterHvofSystemCommandFromResourceAssembler.toCommandFromResource(resource));
-        return ResponseEntityFromHvofSystemCommandResultAssembler.toResponseEntityFromResult(result, messageSource);
+    public ResponseEntity<?> registerHvofSystem(@Valid @RequestBody RegisterHvofSystemResource resource,
+                                                @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
+        var command = RegisterHvofSystemCommandFromResourceAssembler.toCommandFromResource(resource);
+        var result = hvofSystemCommandService.handle(command);
+        return ResponseEntityAssembler.toResponseEntityFromResult(
+                result,
+                HvofSystemResourceFromEntityAssembler::toResourceFromEntity,
+                HttpStatus.CREATED
+        );
     }
 
-
-    @Operation(summary = "Get an HVOF system by id")
+    @GetMapping("/{hvofSystemId}")
+    @Operation(summary = "Get an HVOF system by id", description = "Retrieves an HVOF system by its unique identifier.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "HVOF system found", content = @Content(schema = @Schema(implementation = HvofSystemResource.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid id", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "404", description = "HVOF system not found", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            @ApiResponse(responseCode = "404", description = "HVOF system not found")
     })
-    @GetMapping("{id}")
-    public ResponseEntity<?> getHvofSystemById(@Parameter(description = "HVOF system id", example = "1") @PathVariable Long id) {
-        var result = hvofSystemQueryService.handle(new GetHvofSystemByIdQuery(id));
-        return ResponseEntityFromHvofSystemQueryResultAssembler.toResponseEntityFromOptional(result, id, messageSource);
+    public ResponseEntity<?> getHvofSystemById(@PathVariable Long hvofSystemId,
+                                               @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
+        var hvofSystem = hvofSystemQueryService.handle(new GetHvofSystemByIdQuery(hvofSystemId));
+        if (hvofSystem.isEmpty()) {
+            var error = ApplicationError.notFound("hvof-system", hvofSystemId.toString());
+            return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(error);
+        }
+        return ResponseEntity.ok(HvofSystemResourceFromEntityAssembler.toResourceFromEntity(hvofSystem.get()));
     }
 
-    @Operation(summary = "List the HVOF systems of an organization")
-    @ApiResponse(responseCode = "200", description = "HVOF systems of the organization (empty list if none)")
     @GetMapping
-    public ResponseEntity<List<HvofSystemResource>> getHvofSystemsByOrganizationId(@Parameter(description = "Organization id", example = "1") @RequestParam Long organizationId) {
+    @Operation(summary = "Get all HVOF systems of an organization", description = "Returns an empty array when the organization has no systems.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "HVOF systems retrieved", content = @Content(schema = @Schema(implementation = HvofSystemResource.class)))
+    })
+    public ResponseEntity<List<HvofSystemResource>> getAllHvofSystemsByOrganizationId(@RequestParam Long organizationId,
+                                                                                      @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
         var systems = hvofSystemQueryService.handle(new GetAllHvofSystemsByOrganizationIdQuery(new OrganizationId(organizationId)));
-        return ResponseEntityFromHvofSystemQueryResultAssembler.toResponseEntityFromList(systems);
+        return ResponseEntity.ok(systems.stream().map(HvofSystemResourceFromEntityAssembler::toResourceFromEntity).toList());
     }
 }
