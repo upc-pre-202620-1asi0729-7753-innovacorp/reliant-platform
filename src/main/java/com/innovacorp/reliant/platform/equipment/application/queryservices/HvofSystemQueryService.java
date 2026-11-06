@@ -7,7 +7,11 @@ import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetHvofSys
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * HVOF System Query Service
+ */
 public interface HvofSystemQueryService {
     Optional<HvofSystem> handle(GetHvofSystemByIdQuery query);
+
     List<HvofSystem> handle(GetAllHvofSystemsByOrganizationIdQuery query);
 }

@@ -1,56 +1,96 @@
 package com.innovacorp.reliant.platform.shared.interfaces.rest;
 
-import org.springframework.context.MessageSource;
+import com.innovacorp.reliant.platform.shared.application.result.ApplicationError;
+import com.innovacorp.reliant.platform.shared.interfaces.rest.transform.ProblemDetailFromApplicationErrorAssembler;
+import org.jspecify.annotations.NullMarked;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.web.ErrorResponse;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import lombok.extern.slf4j.Slf4j;
 
-import java.util.Locale;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.text.MessageFormat;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
-@Slf4j
+/**
+ * Last line of defense: anything that did not resolve through Result/ApplicationError becomes a ProblemDetail.
+ */
 @RestControllerAdvice
+@NullMarked
 public class GlobalExceptionHandler {
-    private final MessageSource messageSource;
-
-    public GlobalExceptionHandler(MessageSource messageSource) {
-        this.messageSource = messageSource;
-    }
+    private static final String MESSAGES_BASENAME = "messages";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    ErrorResponse handleException(MethodArgumentNotValidException exception, Locale locale) {
-        String prefix = messageSource.getMessage("errors.found", null, locale);
-        String fields = exception.getFieldErrors().stream()
-                .map(fieldError -> messageSource.getMessage(fieldError, locale))
-                .collect(Collectors.joining(", "));
-        log.warn("Validation failed: {}", fields);
-        return ErrorResponse.create(
-                exception,
-                HttpStatusCode.valueOf(HttpStatus.BAD_REQUEST.value()),
-                prefix + " " + fields
-        );
+    public ResponseEntity<ProblemDetail> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        var fieldErrors = ex.getBindingResult().getFieldErrors();
+        var validationPrefix = resolveMessageOrDefault("validation.field.prefix", "Field");
+        var errorDetails = fieldErrors.isEmpty()
+                ? resolveMessageOrDefault("validation.request.failed", "Request validation failed")
+                : fieldErrors.stream()
+                .map(error -> "%s %s: %s".formatted(
+                        validationPrefix,
+                        error.getField(),
+                        error.getDefaultMessage()
+                ))
+                .reduce((a, b) -> a + "; " + b)
+                .orElse(resolveMessageOrDefault("validation.request.failed", "Request validation failed"));
+
+        var invalidParams = fieldErrors.stream()
+                .map(err -> Map.of(
+                        "field", err.getField(),
+                        "message", err.getDefaultMessage() != null ? err.getDefaultMessage() : "Invalid value"
+                ))
+                .toList();
+
+        var applicationError = ApplicationError.validationError("request-body", errorDetails);
+        var problemDetail = ProblemDetailFromApplicationErrorAssembler.toProblemDetailFromApplicationError(applicationError);
+        if (!invalidParams.isEmpty()) {
+            problemDetail.setProperty("invalidParams", invalidParams);
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    ErrorResponse handleException(IllegalArgumentException exception, Locale locale) {
-        String messageKey = exception.getMessage() != null ? exception.getMessage() : "errors.found";
-        String message = Objects.requireNonNullElse(messageSource.getMessage(messageKey, null, messageKey, locale), messageKey);
-        log.warn("Illegal argument: {}", message);
-        return ErrorResponse.create(exception, HttpStatusCode.valueOf(HttpStatus.BAD_REQUEST.value()), message);
+    public ResponseEntity<ProblemDetail> handleIllegalArgumentException(IllegalArgumentException ex) {
+        var applicationError = ApplicationError.validationError(
+                resolveMessageOrDefault("validation.request.argument", "request-argument"),
+                ex.getMessage() != null ? ex.getMessage() : resolveMessageOrDefault("validation.request.failed", "Request validation failed")
+        );
+        return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(applicationError);
     }
 
-    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    ErrorResponse handleException(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException exception, Locale locale) {
-        String message = messageSource.getMessage("errors.parameter.type", new Object[]{exception.getName()}, locale);
-        return ErrorResponse.create(exception, HttpStatusCode.valueOf(HttpStatus.BAD_REQUEST.value()), message);
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ProblemDetail> handleRuntimeException(RuntimeException ex) {
+        var applicationError = ApplicationError.unexpected(
+                resolveMessageOrDefault("error.unexpected.context", "global-exception-handler"),
+                ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred"
+        );
+        return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(applicationError);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ProblemDetail> handleException(Exception ex) {
+        var applicationError = ApplicationError.unexpected(
+                resolveMessageOrDefault("error.unexpected.context", "global-exception-handler"),
+                ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred"
+        );
+        return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(applicationError);
+    }
+
+    private String resolveMessageOrDefault(String key, String defaultValue, Object... args) {
+        try {
+            var bundle = ResourceBundle.getBundle(MESSAGES_BASENAME, LocaleContextHolder.getLocale());
+            if (!bundle.containsKey(key)) {
+                return defaultValue;
+            }
+            return MessageFormat.format(bundle.getString(key), args);
+        } catch (MissingResourceException ex) {
+            return defaultValue;
+        }
     }
 }

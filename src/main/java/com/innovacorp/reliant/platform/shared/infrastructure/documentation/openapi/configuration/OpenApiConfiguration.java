@@ -2,39 +2,71 @@ package com.innovacorp.reliant.platform.shared.infrastructure.documentation.open
 
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import org.springdoc.core.customizers.OperationCustomizer;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+
+/**
+ * Configures the OpenAPI specification exposed by the platform.
+ */
 @Configuration
 public class OpenApiConfiguration {
+    @Value("${spring.application.name}")
+    String applicationName;
+
     @Value("${documentation.application.description}")
-    private String applicationDescription;
+    String applicationDescription;
 
     @Value("${documentation.application.version}")
-    private String applicationVersion;
+    String applicationVersion;
 
     @Bean
     public OpenAPI reliantPlatformOpenApi() {
-        return new OpenAPI()
+        var openApi = new OpenAPI();
+        openApi
                 .info(new Info()
-                        .title("Reliant Platform API")
-                        .description(applicationDescription)
-                        .version(applicationVersion)
-                        .license(new License().name("MIT").url("https://opensource.org/licenses/MIT")))
+                        .title(this.applicationName)
+                        .description(this.applicationDescription)
+                        .version(this.applicationVersion)
+                        .contact(new Contact()
+                                .name("InnovaCorp Support")
+                                .email("support@innovacorp.pe")
+                                .url("https://reliant.innovacorp.pe/support"))
+                        .license(new License()
+                                .name("MIT")
+                                .url("https://opensource.org/licenses/MIT")))
                 .externalDocs(new ExternalDocumentation()
-                        .description("Reliant Platform wiki")
-                        .url("https://github.com/upc-pre-202620-1asi0729-7753-innovacorp/reliant-platform"));
-    }
+                        .description("Reliant Platform documentation")
+                        .url("https://github.com/upc-pre-202620-1asi0729-7753-innovacorp/reliant-platform/tree/develop/docs"));
 
-    @Bean
-    public OperationCustomizer acceptLanguageHeader() {
-        return (operation, handlerMethod) -> operation.addParametersItem(
-                new io.swagger.v3.oas.models.parameters.Parameter().in("header").name("Accept-Language")
-                        .description("Response language: en | es").required(false)
-                        .schema(new io.swagger.v3.oas.models.media.StringSchema()._default("en")));
+        openApi.servers(List.of(
+                new Server()
+                        .url("http://localhost:8080")
+                        .description("Local Development Environment"),
+                new Server()
+                        .url("https://reliant-platform-api.azurewebsites.net")
+                        .description("Production Environment")
+        ));
+
+        // final String securitySchemeName = "bearerAuth";
+        //
+        // openApi.addSecurityItem(new SecurityRequirement()
+        //                 .addList(securitySchemeName))
+        //         .components(new Components()
+        //                 .addSecuritySchemes(securitySchemeName,
+        //                         new SecurityScheme()
+        //                                 .name(securitySchemeName)
+        //                                 .type(SecurityScheme.Type.HTTP)
+        //                                 .scheme("bearer")
+        //                                 .bearerFormat("JWT")
+        //                                 .description("JWT Bearer token for API authentication")));
+
+        return openApi;
     }
 }
