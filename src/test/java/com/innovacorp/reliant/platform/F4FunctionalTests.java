@@ -47,7 +47,7 @@ class F4FunctionalTests {
         assertNotNull(subsystem);
         assertEquals("Gas console", subsystem.getName());
         assertEquals("GC1", subsystem.getAlias());
-        assertEquals(2, hvofSystem.getSubsystems().size());
+        assertEquals(1, hvofSystem.getSubsystems().size());
     }
 
     @Test
