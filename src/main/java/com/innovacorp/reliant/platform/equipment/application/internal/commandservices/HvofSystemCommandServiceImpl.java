@@ -1,16 +1,18 @@
 package com.innovacorp.reliant.platform.equipment.application.internal.commandservices;
 
-import com.innovacorp.reliant.platform.equipment.application.commandservices.HvofSystemCommandFailure;
 import com.innovacorp.reliant.platform.equipment.application.commandservices.HvofSystemCommandService;
+import com.innovacorp.reliant.platform.equipment.domain.model.aggregates.HvofSystem;
 import com.innovacorp.reliant.platform.equipment.domain.model.commands.RegisterHvofSystemCommand;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
+import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.HvofSystemCode;
+import com.innovacorp.reliant.platform.equipment.domain.repositories.HvofSystemRepository;
+import com.innovacorp.reliant.platform.shared.application.result.ApplicationError;
+import com.innovacorp.reliant.platform.shared.application.result.Result;
+import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import static com.innovacorp.reliant.platform.equipment.domain.model.aggregates.HvofSystem.ORGANIZATION_CODE_UNIQUE_CONSTRAINT;
-
-@Slf4j
+/**
+ * HVOF System Command Service Implementation
+ */
 @Service
 public class HvofSystemCommandServiceImpl implements HvofSystemCommandService {
     private final HvofSystemRepository hvofSystemRepository;
@@ -20,31 +22,19 @@ public class HvofSystemCommandServiceImpl implements HvofSystemCommandService {
     }
 
     @Override
-    @Transactional
-    public Result<HvofSystem, HvofSystemCommandFailure> handle(RegisterHvofSystemCommand command) {
-        if (hvofSystemRepository.existsByOrganizationIdAndCode(command.organizationId(), command.code())) {
-            log.warn("Duplicate HVOF system (pre-check): organizationId={}, code={}", command.organizationId().organizationId(), command.code().code());
-            return Result.failure(new HvofSystemCommandFailure.Duplicate());
-        }
+    public Result<HvofSystem, ApplicationError> handle(RegisterHvofSystemCommand command) {
         try {
-            var created = hvofSystemRepository.save(new HvofSystem(command));
-            log.info("HVOF system registered: id={}, organizationId={}, code={}", created.getId(), created.getOrganizationIdValue(), created.getCodeValue());
-            return Result.success(created);
-        } catch (DataIntegrityViolationException exception) {
-            if (isDuplicateViolation(exception)) {
-                log.warn("Duplicate HVOF system (constraint): organizationId={}, code={}", command.organizationId().organizationId(), command.code().code());
-                return Result.failure(new HvofSystemCommandFailure.Duplicate());
+            var organizationId = new OrganizationId(command.organizationId());
+            var code = new HvofSystemCode(command.code());
+            if (hvofSystemRepository.existsByOrganizationIdAndCode(organizationId, code)) {
+                return Result.failure(ApplicationError.conflict("hvof-system", command.code()));
             }
-            throw exception;
+            var hvofSystem = new HvofSystem(command);
+            return Result.success(hvofSystemRepository.save(hvofSystem));
+        } catch (IllegalArgumentException e) {
+            return Result.failure(ApplicationError.validationError("HvofSystem", e.getMessage()));
+        } catch (Exception e) {
+            return Result.failure(ApplicationError.unexpected("HVOF system registration", e.getMessage()));
         }
-    }
-
-    private boolean isDuplicateViolation(DataIntegrityViolationException exception) {
-        Throwable cause = exception;
-        while (cause != null) {
-            if (cause.getMessage() != null && cause.getMessage().contains(ORGANIZATION_CODE_UNIQUE_CONSTRAINT)) return true;
-            cause = cause.getCause();
-        }
-        return false;
     }
 }
