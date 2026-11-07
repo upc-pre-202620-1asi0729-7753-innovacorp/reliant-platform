@@ -1,32 +1,35 @@
+
 package com.innovacorp.reliant.platform.iam.interfaces.rest;
 
 import com.innovacorp.reliant.platform.iam.application.commandservices.UserCommandService;
+import com.innovacorp.reliant.platform.iam.application.queryservices.UserQueryService;
+import com.innovacorp.reliant.platform.iam.domain.model.queries.GetAllUsersByOrganizationIdQuery;
+import com.innovacorp.reliant.platform.iam.domain.model.queries.GetUserByIdQuery;
+import com.innovacorp.reliant.platform.iam.interfaces.rest.resources.AssignRolesResource;
 import com.innovacorp.reliant.platform.iam.interfaces.rest.resources.SignUpResource;
 import com.innovacorp.reliant.platform.iam.interfaces.rest.resources.UserResource;
+import com.innovacorp.reliant.platform.iam.interfaces.rest.transform.AssignRolesToUserCommandFromResourceAssembler;
 import com.innovacorp.reliant.platform.iam.interfaces.rest.transform.SignUpCommandFromResourceAssembler;
 import com.innovacorp.reliant.platform.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
+import com.innovacorp.reliant.platform.shared.application.result.ApplicationError;
+import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
+import com.innovacorp.reliant.platform.shared.interfaces.rest.transform.ProblemDetailFromApplicationErrorAssembler;
 import com.innovacorp.reliant.platform.shared.interfaces.rest.transform.ResponseEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.innovacorp.reliant.platform.iam.application.queryservices.UserQueryService;
-import com.innovacorp.reliant.platform.iam.domain.model.queries.GetAllUsersByOrganizationIdQuery;
-import com.innovacorp.reliant.platform.iam.domain.model.queries.GetUserByIdQuery;
-import com.innovacorp.reliant.platform.iam.interfaces.rest.resources.AssignRolesResource;
-import com.innovacorp.reliant.platform.iam.interfaces.rest.transform.AssignRolesToUserCommandFromResourceAssembler;
-import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
 
 import java.util.List;
-import com.innovacorp.reliant.platform.shared.application.result.ApplicationError;
-import com.innovacorp.reliant.platform.shared.interfaces.rest.transform.ProblemDetailFromApplicationErrorAssembler;
 
 /**
  * REST controller that exposes user resources. POST is the sign-up.
@@ -54,14 +57,25 @@ public class UsersController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "409", description = "Email or RUC already registered")
     })
-    public ResponseEntity<?> createUser(@Valid @RequestBody SignUpResource resource,
-                                        @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
+    public ResponseEntity<?> createUser(
+            @Valid @RequestBody SignUpResource resource,
+            @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage
+    ) {
         var command = SignUpCommandFromResourceAssembler.toCommandFromResource(resource);
         var result = userCommandService.handle(command);
-        return ResponseEntityAssembler.toResponseEntityFromResult(result, UserResourceFromEntityAssembler::toResourceFromEntity, HttpStatus.CREATED);
+        return ResponseEntityAssembler.toResponseEntityFromResult(
+                result,
+                UserResourceFromEntityAssembler::toResourceFromEntity,
+                HttpStatus.CREATED
+        );
     }
+
     @GetMapping
-    @Operation(summary = "Get all users of an organization")
+    @PreAuthorize("hasAuthority('ROLE_ORG_ADMIN')")
+    @Operation(
+            summary = "Get all users of an organization",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -85,7 +99,10 @@ public class UsersController {
     }
 
     @GetMapping("/{userId}")
-    @Operation(summary = "Get a user by id")
+    @Operation(
+            summary = "Get a user by id",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -112,9 +129,11 @@ public class UsersController {
     }
 
     @PutMapping("/{userId}/roles")
+    @PreAuthorize("hasAuthority('ROLE_ORG_ADMIN')")
     @Operation(
             summary = "Assign roles to a user",
-            description = "Replaces the whole role set of the user."
+            description = "Replaces the whole role set of the user.",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(
