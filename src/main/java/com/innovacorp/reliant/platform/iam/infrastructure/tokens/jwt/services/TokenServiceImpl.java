@@ -1,13 +1,16 @@
 package com.innovacorp.reliant.platform.iam.infrastructure.tokens.jwt.services;
 
-import com.innovacorp.reliant.platform.iam.application.internal.outboundservices.tokens.TokenService;
+import com.innovacorp.reliant.platform.iam.infrastructure.tokens.jwt.BearerTokenService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -19,7 +22,11 @@ import java.util.function.Function;
  */
 @Service
 @Slf4j
-public class TokenServiceImpl implements TokenService {
+public class TokenServiceImpl implements BearerTokenService {
+
+    private static final String AUTHORIZATION_PARAMETER_NAME = "Authorization";
+    private static final String BEARER_TOKEN_PREFIX = "Bearer ";
+    private static final int TOKEN_BEGIN_INDEX = 7;
 
     @Value("${authorization.jwt.secret}")
     private String secret;
@@ -30,6 +37,11 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String generateToken(String username) {
         return buildTokenWithDefaultParameters(username);
+    }
+
+    @Override
+    public String generateToken(Authentication authentication) {
+        return buildTokenWithDefaultParameters(authentication.getName());
     }
 
     private String buildTokenWithDefaultParameters(String username) {
@@ -92,5 +104,32 @@ public class TokenServiceImpl implements TokenService {
     private SecretKey getSigningKey() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private boolean isTokenPresentIn(String authorizationParameter) {
+        return StringUtils.hasText(authorizationParameter);
+    }
+
+    private boolean isBearerTokenIn(String authorizationParameter) {
+        return authorizationParameter.startsWith(BEARER_TOKEN_PREFIX);
+    }
+
+    private String extractTokenFrom(String authorizationHeaderParameter) {
+        return authorizationHeaderParameter.substring(TOKEN_BEGIN_INDEX);
+    }
+
+    private String getAuthorizationParameterFrom(HttpServletRequest request) {
+        return request.getHeader(AUTHORIZATION_PARAMETER_NAME);
+    }
+
+    @Override
+    public String getBearerTokenFrom(HttpServletRequest request) {
+        String parameter = getAuthorizationParameterFrom(request);
+
+        if (isTokenPresentIn(parameter) && isBearerTokenIn(parameter)) {
+            return extractTokenFrom(parameter);
+        }
+
+        return null;
     }
 }
