@@ -58,3 +58,4 @@ public class BearerAuthorizationRequestFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+
