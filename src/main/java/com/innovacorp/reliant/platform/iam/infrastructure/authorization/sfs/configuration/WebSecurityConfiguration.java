@@ -1,3 +1,4 @@
+
 package com.innovacorp.reliant.platform.iam.infrastructure.authorization.sfs.configuration;
 
 import com.innovacorp.reliant.platform.iam.infrastructure.authorization.sfs.pipeline.BearerAuthorizationRequestFilter;
@@ -21,7 +22,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
- * Web Security Configuration: stateless JWT filter chain, authentication provider and public routes.
+ * Web Security Configuration: stateless JWT filter chain,
+ * authentication provider and public routes.
  */
 @Configuration
 @EnableMethodSecurity
@@ -38,8 +40,8 @@ public class WebSecurityConfiguration {
             BearerTokenService tokenService,
             BCryptHashingService hashingService,
             AuthenticationEntryPoint authenticationEntryPoint,
-            CorsConfigurationSource corsConfigurationSource) {
-
+            CorsConfigurationSource corsConfigurationSource
+    ) {
         this.userDetailsService = userDetailsService;
         this.tokenService = tokenService;
         this.hashingService = hashingService;
@@ -49,7 +51,10 @@ public class WebSecurityConfiguration {
 
     @Bean
     public BearerAuthorizationRequestFilter authorizationRequestFilter() {
-        return new BearerAuthorizationRequestFilter(tokenService, userDetailsService);
+        return new BearerAuthorizationRequestFilter(
+                tokenService,
+                userDetailsService
+        );
     }
 
     @Bean
@@ -61,8 +66,11 @@ public class WebSecurityConfiguration {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        var authenticationProvider = new DaoAuthenticationProvider(userDetailsService);
+        var authenticationProvider =
+                new DaoAuthenticationProvider(userDetailsService);
+
         authenticationProvider.setPasswordEncoder(hashingService);
+
         return authenticationProvider;
     }
 
@@ -80,14 +88,25 @@ public class WebSecurityConfiguration {
 
         http.csrf(csrfConfigurer -> csrfConfigurer.disable())
                 .exceptionHandling(exceptionHandling ->
-                        exceptionHandling.authenticationEntryPoint(unauthorizedRequestHandler)
+                        exceptionHandling.authenticationEntryPoint(
+                                unauthorizedRequestHandler
+                        )
                 )
                 .sessionManagement(customizer ->
-                        customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        customizer.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
                 )
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users", "/api/v1/tokens").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/roles").permitAll()
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/users",
+                                "/api/v1/tokens"
+                        ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/roles"
+                        ).permitAll()
                         .requestMatchers(
                                 "/health",
                                 "/v3/api-docs/**",
@@ -109,4 +128,6 @@ public class WebSecurityConfiguration {
         return http.build();
     }
 }
+
+
 
