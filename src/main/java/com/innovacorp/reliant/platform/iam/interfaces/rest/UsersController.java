@@ -4,7 +4,9 @@ package com.innovacorp.reliant.platform.iam.interfaces.rest;
 import com.innovacorp.reliant.platform.iam.application.commandservices.UserCommandService;
 import com.innovacorp.reliant.platform.iam.application.queryservices.UserQueryService;
 import com.innovacorp.reliant.platform.iam.domain.model.queries.GetAllUsersByOrganizationIdQuery;
+import com.innovacorp.reliant.platform.iam.domain.model.queries.GetUserByEmailQuery;
 import com.innovacorp.reliant.platform.iam.domain.model.queries.GetUserByIdQuery;
+import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.EmailAddress;
 import com.innovacorp.reliant.platform.iam.interfaces.rest.resources.AssignRolesResource;
 import com.innovacorp.reliant.platform.iam.interfaces.rest.resources.SignUpResource;
 import com.innovacorp.reliant.platform.iam.interfaces.rest.resources.UserResource;
@@ -26,6 +28,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -97,6 +101,43 @@ public class UsersController {
                 users.stream()
                         .map(UserResourceFromEntityAssembler::toResourceFromEntity)
                         .toList()
+        );
+    }
+
+    @GetMapping("/me")
+    @Operation(
+            summary = "Get the authenticated user",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Authenticated user",
+                    content = @Content(schema = @Schema(implementation = UserResource.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Missing or invalid token"
+            )
+    })
+    public ResponseEntity<?> getAuthenticatedUser(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage
+    ) {
+        var user = userQueryService.handle(
+                new GetUserByEmailQuery(
+                        new EmailAddress(principal.getUsername())
+                )
+        );
+
+        if (user.isEmpty()) {
+            return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(
+                    ApplicationError.notFound("user", principal.getUsername())
+            );
+        }
+
+        return ResponseEntity.ok(
+                UserResourceFromEntityAssembler.toResourceFromEntity(user.get())
         );
     }
 
