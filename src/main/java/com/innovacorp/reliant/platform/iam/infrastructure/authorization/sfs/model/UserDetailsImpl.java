@@ -1,27 +1,48 @@
-package com.innovacorp.reliant.platform.iam.infrastructure.authorization.sfs.services;
+package com.innovacorp.reliant.platform.iam.infrastructure.authorization.sfs.model;
 
-import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.EmailAddress;
-import com.innovacorp.reliant.platform.iam.domain.repositories.UserRepository;
-import com.innovacorp.reliant.platform.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
+import com.innovacorp.reliant.platform.iam.domain.model.aggregates.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
 
-@Service(value = "defaultUserDetailsService")
-public class UserDetailsServiceImpl implements UserDetailsService {
+import java.util.Collection;
+import java.util.stream.Collectors;
 
-    private final UserRepository userRepository;
+@Getter
+@EqualsAndHashCode
+public class UserDetailsImpl implements UserDetails {
 
-    public UserDetailsServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    private final String username;
+
+    @JsonIgnore
+    private final String password;
+
+    private final boolean accountNonExpired;
+    private final boolean accountNonLocked;
+    private final boolean credentialsNonExpired;
+    private final boolean enabled;
+
+    private final Collection<? extends GrantedAuthority> authorities;
+
+    public UserDetailsImpl(String username, String password, Collection<? extends GrantedAuthority> authorities) {
+        this.username = username;
+        this.password = password;
+        this.authorities = authorities;
+        this.accountNonExpired = true;
+        this.accountNonLocked = true;
+        this.credentialsNonExpired = true;
+        this.enabled = true;
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var user = userRepository.findByEmailAddress(new EmailAddress(username))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
+    public static UserDetailsImpl build(User user) {
+        var authorities = user.getRoles().stream()
+                .map(role -> role.getName().name())
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
 
-        return UserDetailsImpl.build(user);
+        return new UserDetailsImpl(user.getEmailValue(), user.getPassword(), authorities);
     }
 }
