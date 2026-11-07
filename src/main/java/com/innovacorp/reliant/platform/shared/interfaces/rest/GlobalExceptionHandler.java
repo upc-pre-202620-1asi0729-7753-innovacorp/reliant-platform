@@ -1,3 +1,4 @@
+
 package com.innovacorp.reliant.platform.shared.interfaces.rest;
 
 import com.innovacorp.reliant.platform.shared.application.result.ApplicationError;
@@ -7,6 +8,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,6 +24,7 @@ import java.util.ResourceBundle;
 @RestControllerAdvice
 @NullMarked
 public class GlobalExceptionHandler {
+
     private static final String MESSAGES_BASENAME = "messages";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -64,6 +67,19 @@ public class GlobalExceptionHandler {
         return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(applicationError);
     }
 
+    // Maneja los accesos denegados y devuelve un 403 ACCESS_FORBIDDEN.
+    // Debe estar antes del handler de RuntimeException.
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleAccessDeniedException(AccessDeniedException ex) {
+        var applicationError = new ApplicationError(
+                "ACCESS_FORBIDDEN",
+                "Access forbidden",
+                ex.getMessage()
+        );
+
+        return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(applicationError);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ProblemDetail> handleRuntimeException(RuntimeException ex) {
         var applicationError = ApplicationError.unexpected(
@@ -94,3 +110,5 @@ public class GlobalExceptionHandler {
         }
     }
 }
+
+

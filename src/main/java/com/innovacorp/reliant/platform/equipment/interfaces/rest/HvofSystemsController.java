@@ -1,5 +1,16 @@
 package com.innovacorp.reliant.platform.equipment.interfaces.rest;
 
+import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetAllHvofSubsystemsByHvofSystemIdQuery;
+import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetAllControllersByHvofSystemIdQuery;
+import com.innovacorp.reliant.platform.equipment.interfaces.rest.resources.HvofSubsystemResource;
+import com.innovacorp.reliant.platform.equipment.interfaces.rest.resources.RegisterHvofSubsystemResource;
+import com.innovacorp.reliant.platform.equipment.interfaces.rest.resources.ControllerResource;
+import com.innovacorp.reliant.platform.equipment.interfaces.rest.resources.RegisterControllerResource;
+import com.innovacorp.reliant.platform.equipment.interfaces.rest.transform.HvofSubsystemResourceFromEntityAssembler;
+import com.innovacorp.reliant.platform.equipment.interfaces.rest.transform.RegisterHvofSubsystemCommandFromResourceAssembler;
+import com.innovacorp.reliant.platform.equipment.interfaces.rest.transform.ControllerResourceFromEntityAssembler;
+import com.innovacorp.reliant.platform.equipment.interfaces.rest.transform.RegisterControllerCommandFromResourceAssembler;
+
 import com.innovacorp.reliant.platform.equipment.application.commandservices.HvofSystemCommandService;
 import com.innovacorp.reliant.platform.equipment.application.queryservices.HvofSystemQueryService;
 import com.innovacorp.reliant.platform.equipment.domain.model.queries.GetAllHvofSystemsByOrganizationIdQuery;
@@ -88,4 +99,93 @@ public class HvofSystemsController {
         var systems = hvofSystemQueryService.handle(new GetAllHvofSystemsByOrganizationIdQuery(new OrganizationId(organizationId)));
         return ResponseEntity.ok(systems.stream().map(HvofSystemResourceFromEntityAssembler::toResourceFromEntity).toList());
     }
-}
+
+    @PostMapping("/{hvofSystemId}/subsystems")
+    @Operation(summary = "Register a subsystem in an HVOF system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Subsystem registered", content = @Content(schema = @Schema(implementation = HvofSubsystemResource.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "HVOF system not found"),
+            @ApiResponse(responseCode = "409", description = "Subsystem name already used in the system")
+    })
+    public ResponseEntity<?> registerSubsystem(@PathVariable Long hvofSystemId,
+                                               @Valid @RequestBody RegisterHvofSubsystemResource resource,
+                                               @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
+        var command = RegisterHvofSubsystemCommandFromResourceAssembler.toCommandFromResource(hvofSystemId, resource);
+        var result = hvofSystemCommandService.handle(command);
+        return ResponseEntityAssembler.toResponseEntityFromResult(
+                result,
+                s -> HvofSubsystemResourceFromEntityAssembler.toResourceFromEntity(s, hvofSystemId),
+                HttpStatus.CREATED
+        );
+    }
+
+    @GetMapping("/{hvofSystemId}/subsystems")
+    @Operation(summary = "Get the subsystems of an HVOF system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Subsystems retrieved", content = @Content(schema = @Schema(implementation = HvofSubsystemResource.class))),
+            @ApiResponse(responseCode = "404", description = "HVOF system not found")
+    })
+    public ResponseEntity<?> getSubsystems(@PathVariable Long hvofSystemId,
+                                           @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
+        if (hvofSystemQueryService.handle(new GetHvofSystemByIdQuery(hvofSystemId)).isEmpty()) {
+            return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(
+                    ApplicationError.notFound("hvof-system", hvofSystemId.toString())
+            );
+        }
+
+        var subsystems = hvofSystemQueryService.handle(
+                new GetAllHvofSubsystemsByHvofSystemIdQuery(hvofSystemId)
+        );
+
+        return ResponseEntity.ok(
+                subsystems.stream()
+                        .map(s -> HvofSubsystemResourceFromEntityAssembler.toResourceFromEntity(s, hvofSystemId))
+                        .toList()
+        );
+    }
+
+    @PostMapping("/{hvofSystemId}/controllers")
+    @Operation(summary = "Register a controller in an HVOF system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Controller registered", content = @Content(schema = @Schema(implementation = ControllerResource.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "HVOF system not found"),
+            @ApiResponse(responseCode = "409", description = "Controller number already used in the system")
+    })
+    public ResponseEntity<?> registerController(@PathVariable Long hvofSystemId,
+                                                @Valid @RequestBody RegisterControllerResource resource,
+                                                @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
+        var command = RegisterControllerCommandFromResourceAssembler.toCommandFromResource(hvofSystemId, resource);
+        var result = hvofSystemCommandService.handle(command);
+        return ResponseEntityAssembler.toResponseEntityFromResult(
+                result,
+                c -> ControllerResourceFromEntityAssembler.toResourceFromEntity(c, hvofSystemId),
+                HttpStatus.CREATED
+        );
+    }
+
+    @GetMapping("/{hvofSystemId}/controllers")
+    @Operation(summary = "Get the controllers of an HVOF system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Controllers retrieved", content = @Content(schema = @Schema(implementation = ControllerResource.class))),
+            @ApiResponse(responseCode = "404", description = "HVOF system not found")
+    })
+    public ResponseEntity<?> getControllers(@PathVariable Long hvofSystemId,
+                                            @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
+        if (hvofSystemQueryService.handle(new GetHvofSystemByIdQuery(hvofSystemId)).isEmpty()) {
+            return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(
+                    ApplicationError.notFound("hvof-system", hvofSystemId.toString())
+            );
+        }
+
+        var controllers = hvofSystemQueryService.handle(
+                new GetAllControllersByHvofSystemIdQuery(hvofSystemId)
+        );
+
+        return ResponseEntity.ok(
+                controllers.stream()
+                        .map(c -> ControllerResourceFromEntityAssembler.toResourceFromEntity(c, hvofSystemId))
+                        .toList()
+        );
+    }}
