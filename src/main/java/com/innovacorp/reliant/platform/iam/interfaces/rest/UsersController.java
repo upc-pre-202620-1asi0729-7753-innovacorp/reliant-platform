@@ -26,7 +26,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,7 +50,10 @@ public class UsersController {
     }
 
     @PostMapping
-    @Operation(summary = "Sign up", description = "Registers an organization and its first administrator user.")
+    @Operation(
+            summary = "Sign up",
+            description = "Registers an organization and its first administrator user."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created", content = @Content(schema = @Schema(implementation = UserResource.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
@@ -63,6 +65,7 @@ public class UsersController {
     ) {
         var command = SignUpCommandFromResourceAssembler.toCommandFromResource(resource);
         var result = userCommandService.handle(command);
+
         return ResponseEntityAssembler.toResponseEntityFromResult(
                 result,
                 UserResourceFromEntityAssembler::toResourceFromEntity,
@@ -71,7 +74,6 @@ public class UsersController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_ORG_ADMIN')")
     @Operation(
             summary = "Get all users of an organization",
             security = @SecurityRequirement(name = "bearerAuth")
@@ -129,7 +131,6 @@ public class UsersController {
     }
 
     @PutMapping("/{userId}/roles")
-    @PreAuthorize("hasAuthority('ROLE_ORG_ADMIN')")
     @Operation(
             summary = "Assign roles to a user",
             description = "Replaces the whole role set of the user.",
