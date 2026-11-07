@@ -1,10 +1,14 @@
+
 package com.innovacorp.reliant.platform.shared.infrastructure.documentation.openapi.configuration;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +21,7 @@ import java.util.List;
  */
 @Configuration
 public class OpenApiConfiguration {
+
     @Value("${spring.application.name}")
     String applicationName;
 
@@ -29,6 +34,7 @@ public class OpenApiConfiguration {
     @Bean
     public OpenAPI reliantPlatformOpenApi() {
         var openApi = new OpenAPI();
+
         openApi
                 .info(new Info()
                         .title(this.applicationName)
@@ -54,18 +60,24 @@ public class OpenApiConfiguration {
                         .description("Production Environment")
         ));
 
-        // final String securitySchemeName = "bearerAuth";
-        //
-        // openApi.addSecurityItem(new SecurityRequirement()
-        //                 .addList(securitySchemeName))
-        //         .components(new Components()
-        //                 .addSecuritySchemes(securitySchemeName,
-        //                         new SecurityScheme()
-        //                                 .name(securitySchemeName)
-        //                                 .type(SecurityScheme.Type.HTTP)
-        //                                 .scheme("bearer")
-        //                                 .bearerFormat("JWT")
-        //                                 .description("JWT Bearer token for API authentication")));
+        // JWT Bearer Authentication
+        final String securitySchemeName = "bearerAuth";
+
+        openApi.addSecurityItem(
+                new SecurityRequirement()
+                        .addList(securitySchemeName)
+        ).components(
+                new Components()
+                        .addSecuritySchemes(
+                                securitySchemeName,
+                                new SecurityScheme()
+                                        .name(securitySchemeName)
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                                        .description("JWT Bearer token for API authentication")
+                        )
+        );
 
         return openApi;
     }
