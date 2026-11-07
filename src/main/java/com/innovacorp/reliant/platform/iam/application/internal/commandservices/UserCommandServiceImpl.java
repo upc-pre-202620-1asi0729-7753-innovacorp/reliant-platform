@@ -21,14 +21,14 @@ import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.Organiza
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.innovacorp.reliant.platform.iam.domain.model.commands.AssignRolesToUserCommand;
 import java.util.List;
 
 /**
  * User Command Service Implementation.
  */
 @Service
-public class UserCommandServiceImpl implements UserCommandService {
+ public class UserCommandServiceImpl implements UserCommandService {
 
     private final UserRepository userRepository;
     private final OrganizationRepository organizationRepository;
@@ -131,6 +131,33 @@ public class UserCommandServiceImpl implements UserCommandService {
                     ApplicationError.validationError(
                             "credentials",
                             "Invalid email or password"));
+        }
+    }
+    @Override
+    public Result<User, ApplicationError> handle(AssignRolesToUserCommand command) {
+        var user = userRepository.findById(command.userId());
+
+        if (user.isEmpty()) {
+            return Result.failure(
+                    ApplicationError.notFound("user", String.valueOf(command.userId()))
+            );
+        }
+
+        var roles = roleRepository.findAllById(command.roleIds());
+
+        if (roles.size() != command.roleIds().stream().distinct().count()) {
+            return Result.failure(
+                    ApplicationError.notFound("role", command.roleIds().toString())
+            );
+        }
+
+        try {
+            user.get().replaceRoles(roles);
+            return Result.success(userRepository.save(user.get()));
+        } catch (Exception e) {
+            return Result.failure(
+                    ApplicationError.unexpected("assign-roles", e.getMessage())
+            );
         }
     }
 }
