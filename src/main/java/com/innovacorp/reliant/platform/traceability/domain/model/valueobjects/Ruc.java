@@ -10,4 +10,3 @@ public record Ruc(String ruc) {
         }
     }
 }
-}
