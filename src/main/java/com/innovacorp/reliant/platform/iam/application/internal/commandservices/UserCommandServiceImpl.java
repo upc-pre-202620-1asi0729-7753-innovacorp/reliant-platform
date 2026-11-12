@@ -5,6 +5,7 @@ import com.innovacorp.reliant.platform.iam.application.internal.outboundservices
 import com.innovacorp.reliant.platform.iam.application.internal.outboundservices.tokens.TokenService;
 import com.innovacorp.reliant.platform.iam.domain.model.aggregates.Organization;
 import com.innovacorp.reliant.platform.iam.domain.model.aggregates.User;
+import com.innovacorp.reliant.platform.iam.domain.model.commands.AssignRolesToUserCommand;
 import com.innovacorp.reliant.platform.iam.domain.model.commands.SignInCommand;
 import com.innovacorp.reliant.platform.iam.domain.model.commands.SignUpCommand;
 import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.EmailAddress;
@@ -87,6 +88,24 @@ public class UserCommandServiceImpl implements UserCommandService {
             return Result.success(ImmutablePair.of(user.get(), token));
         } catch (IllegalArgumentException e) {
             return Result.failure(ApplicationError.validationError("credentials", "Invalid email or password"));
+        }
+    }
+
+    @Override
+    public Result<User, ApplicationError> handle(AssignRolesToUserCommand command) {
+        var user = userRepository.findById(command.userId());
+        if (user.isEmpty()) {
+            return Result.failure(ApplicationError.notFound("user", String.valueOf(command.userId())));
+        }
+        var roles = roleRepository.findAllById(command.roleIds());
+        if (roles.size() != command.roleIds().stream().distinct().count()) {
+            return Result.failure(ApplicationError.notFound("role", command.roleIds().toString()));
+        }
+        try {
+            user.get().replaceRoles(roles);
+            return Result.success(userRepository.save(user.get()));
+        } catch (Exception e) {
+            return Result.failure(ApplicationError.unexpected("assign-roles", e.getMessage()));
         }
     }
 }
