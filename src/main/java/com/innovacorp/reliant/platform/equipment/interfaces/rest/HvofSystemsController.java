@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -53,7 +54,7 @@ public class HvofSystemsController {
     }
 
     @PostMapping
-    @Operation(
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"), 
             summary = "Register an HVOF system",
             description = "Registers a thermal spray system owned by a recuperation supplier organization."
     )
@@ -74,7 +75,7 @@ public class HvofSystemsController {
     }
 
     @GetMapping("/{hvofSystemId}")
-    @Operation(summary = "Get an HVOF system by id", description = "Retrieves an HVOF system by its unique identifier.")
+    @Operation(summary = "Get an HVOF system by id", description = "Retrieves an HVOF system by its unique identifier.", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "HVOF system found", content = @Content(schema = @Schema(implementation = HvofSystemResource.class))),
             @ApiResponse(responseCode = "404", description = "HVOF system not found")
@@ -90,7 +91,7 @@ public class HvofSystemsController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all HVOF systems of an organization", description = "Returns an empty array when the organization has no systems.")
+    @Operation(summary = "Get all HVOF systems of an organization", description = "Returns an empty array when the organization has no systems.", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "HVOF systems retrieved", content = @Content(schema = @Schema(implementation = HvofSystemResource.class)))
     })
@@ -101,7 +102,7 @@ public class HvofSystemsController {
     }
 
     @PostMapping("/{hvofSystemId}/subsystems")
-    @Operation(summary = "Register a subsystem in an HVOF system")
+    @Operation(summary = "Register a subsystem in an HVOF system", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Subsystem registered", content = @Content(schema = @Schema(implementation = HvofSubsystemResource.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
@@ -121,7 +122,7 @@ public class HvofSystemsController {
     }
 
     @GetMapping("/{hvofSystemId}/subsystems")
-    @Operation(summary = "Get the subsystems of an HVOF system")
+    @Operation(summary = "Get the subsystems of an HVOF system", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Subsystems retrieved", content = @Content(schema = @Schema(implementation = HvofSubsystemResource.class))),
             @ApiResponse(responseCode = "404", description = "HVOF system not found")
@@ -146,7 +147,7 @@ public class HvofSystemsController {
     }
 
     @PostMapping("/{hvofSystemId}/controllers")
-    @Operation(summary = "Register a controller in an HVOF system")
+    @Operation(summary = "Register a controller in an HVOF system", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Controller registered", content = @Content(schema = @Schema(implementation = ControllerResource.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
@@ -166,7 +167,7 @@ public class HvofSystemsController {
     }
 
     @GetMapping("/{hvofSystemId}/controllers")
-    @Operation(summary = "Get the controllers of an HVOF system")
+    @Operation(summary = "Get the controllers of an HVOF system", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Controllers retrieved", content = @Content(schema = @Schema(implementation = ControllerResource.class))),
             @ApiResponse(responseCode = "404", description = "HVOF system not found")

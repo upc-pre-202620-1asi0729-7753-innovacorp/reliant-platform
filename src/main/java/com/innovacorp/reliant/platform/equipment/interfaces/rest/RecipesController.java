@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -47,7 +48,7 @@ public class RecipesController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a draft recipe")
+    @Operation(summary = "Create a draft recipe", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Recipe created",
                     content = @Content(schema = @Schema(implementation = RecipeResource.class))),
@@ -72,7 +73,7 @@ public class RecipesController {
     }
 
     @GetMapping("/{recipeId}")
-    @Operation(summary = "Get a recipe by id")
+    @Operation(summary = "Get a recipe by id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Recipe found",
                     content = @Content(schema = @Schema(implementation = RecipeResource.class))),
@@ -100,7 +101,7 @@ public class RecipesController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all recipes of an HVOF system")
+    @Operation(summary = "Get all recipes of an HVOF system", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Recipes retrieved",
                     content = @Content(schema = @Schema(implementation = RecipeResource.class)))
@@ -123,7 +124,7 @@ public class RecipesController {
     }
 
     @PatchMapping("/{recipeId}/publication")
-    @Operation(
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"), 
             summary = "Publish a recipe",
             description = "DRAFT → ACTIVE. The previous ACTIVE recipe with the same number is retired."
     )
