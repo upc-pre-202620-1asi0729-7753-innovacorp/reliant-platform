@@ -11,7 +11,7 @@ import com.innovacorp.reliant.platform.equipment.interfaces.acl.RecipeBandSnapsh
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Locale;
+
 
 @Service
 public class EquipmentContextFacadeImpl implements EquipmentContextFacade {
@@ -50,7 +50,7 @@ public class EquipmentContextFacadeImpl implements EquipmentContextFacade {
                                     bands.upperWarning(),
                                     bands.upperShutdown(),
                                     parameter.getUnitSymbol(),
-                                    parameter.getUnitCategory().toLowerCase(Locale.ROOT));
+                                    parameter.getUnitCategory().toLowerCase());
                         })
                         .toList())
                 .orElse(List.of());
