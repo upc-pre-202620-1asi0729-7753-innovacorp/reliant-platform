@@ -1,6 +1,6 @@
 package com.innovacorp.reliant.platform.iam.infrastructure.hashing.bcrypt.services;
 
-import com.innovacorp.reliant.platform.iam.application.internal.outboundservices.hashing.HashingService;
+import com.innovacorp.reliant.platform.iam.infrastructure.hashing.bcrypt.BCryptHashingService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
  * Hashes passwords with BCrypt.
  */
 @Service
-public class HashingServiceImpl implements HashingService {
+public class HashingServiceImpl implements BCryptHashingService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     HashingServiceImpl() {

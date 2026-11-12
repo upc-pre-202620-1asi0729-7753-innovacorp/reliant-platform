@@ -3,7 +3,9 @@ package com.innovacorp.reliant.platform.iam.interfaces.rest;
 import com.innovacorp.reliant.platform.iam.application.commandservices.UserCommandService;
 import com.innovacorp.reliant.platform.iam.application.queryservices.UserQueryService;
 import com.innovacorp.reliant.platform.iam.domain.model.queries.GetAllUsersByOrganizationIdQuery;
+import com.innovacorp.reliant.platform.iam.domain.model.queries.GetUserByEmailQuery;
 import com.innovacorp.reliant.platform.iam.domain.model.queries.GetUserByIdQuery;
+import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.EmailAddress;
 import com.innovacorp.reliant.platform.iam.interfaces.rest.resources.AssignRolesResource;
 import com.innovacorp.reliant.platform.iam.interfaces.rest.resources.SignUpResource;
 import com.innovacorp.reliant.platform.iam.interfaces.rest.resources.UserResource;
@@ -19,11 +21,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,7 +64,8 @@ public class UsersController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all users of an organization")
+    @PreAuthorize("hasAuthority('ROLE_ORG_ADMIN')")
+    @Operation(summary = "Get all users of an organization", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users retrieved", content = @Content(schema = @Schema(implementation = UserResource.class)))
     })
@@ -68,8 +75,23 @@ public class UsersController {
         return ResponseEntity.ok(users.stream().map(UserResourceFromEntityAssembler::toResourceFromEntity).toList());
     }
 
+    @GetMapping("/me")
+    @Operation(summary = "Get the authenticated user", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Authenticated user", content = @Content(schema = @Schema(implementation = UserResource.class))),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid token")
+    })
+    public ResponseEntity<?> getAuthenticatedUser(@AuthenticationPrincipal UserDetails principal,
+                                                  @RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
+        var user = userQueryService.handle(new GetUserByEmailQuery(new EmailAddress(principal.getUsername())));
+        if (user.isEmpty()) {
+            return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(ApplicationError.notFound("user", principal.getUsername()));
+        }
+        return ResponseEntity.ok(UserResourceFromEntityAssembler.toResourceFromEntity(user.get()));
+    }
+
     @GetMapping("/{userId}")
-    @Operation(summary = "Get a user by id")
+    @Operation(summary = "Get a user by id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User found", content = @Content(schema = @Schema(implementation = UserResource.class))),
             @ApiResponse(responseCode = "404", description = "User not found")
@@ -84,7 +106,8 @@ public class UsersController {
     }
 
     @PutMapping("/{userId}/roles")
-    @Operation(summary = "Assign roles to a user", description = "Replaces the whole role set of the user.")
+    @PreAuthorize("hasAuthority('ROLE_ORG_ADMIN')")
+    @Operation(summary = "Assign roles to a user", description = "Replaces the whole role set of the user.", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Roles assigned", content = @Content(schema = @Schema(implementation = UserResource.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
