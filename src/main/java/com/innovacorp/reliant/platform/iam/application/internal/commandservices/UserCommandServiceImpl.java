@@ -2,19 +2,23 @@ package com.innovacorp.reliant.platform.iam.application.internal.commandservices
 
 import com.innovacorp.reliant.platform.iam.application.commandservices.UserCommandService;
 import com.innovacorp.reliant.platform.iam.application.internal.outboundservices.hashing.HashingService;
+import com.innovacorp.reliant.platform.iam.application.internal.outboundservices.tokens.TokenService;
 import com.innovacorp.reliant.platform.iam.domain.model.aggregates.Organization;
 import com.innovacorp.reliant.platform.iam.domain.model.aggregates.User;
+import com.innovacorp.reliant.platform.iam.domain.model.commands.SignInCommand;
 import com.innovacorp.reliant.platform.iam.domain.model.commands.SignUpCommand;
 import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.EmailAddress;
 import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.OrganizationType;
 import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.Roles;
 import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.Ruc;
+import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.UserStatus;
 import com.innovacorp.reliant.platform.iam.domain.repositories.OrganizationRepository;
 import com.innovacorp.reliant.platform.iam.domain.repositories.RoleRepository;
 import com.innovacorp.reliant.platform.iam.domain.repositories.UserRepository;
 import com.innovacorp.reliant.platform.shared.application.result.ApplicationError;
 import com.innovacorp.reliant.platform.shared.application.result.Result;
 import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +33,15 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final OrganizationRepository organizationRepository;
     private final RoleRepository roleRepository;
     private final HashingService hashingService;
+    private final TokenService tokenService;
 
     public UserCommandServiceImpl(UserRepository userRepository, OrganizationRepository organizationRepository,
-                                  RoleRepository roleRepository, HashingService hashingService) {
+                                  RoleRepository roleRepository, HashingService hashingService, TokenService tokenService) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.roleRepository = roleRepository;
         this.hashingService = hashingService;
+        this.tokenService = tokenService;
     }
 
     @Override
@@ -64,6 +70,23 @@ public class UserCommandServiceImpl implements UserCommandService {
             return Result.failure(ApplicationError.validationError("sign-up", e.getMessage()));
         } catch (Exception e) {
             return Result.failure(ApplicationError.unexpected("sign-up", e.getMessage()));
+        }
+    }
+
+    @Override
+    public Result<ImmutablePair<User, String>, ApplicationError> handle(SignInCommand command) {
+        try {
+            var user = userRepository.findByEmailAddress(new EmailAddress(command.email()));
+            if (user.isEmpty() || !hashingService.matches(command.password(), user.get().getPassword())) {
+                return Result.failure(ApplicationError.validationError("credentials", "Invalid email or password"));
+            }
+            if (user.get().getStatus() != UserStatus.ACTIVE) {
+                return Result.failure(ApplicationError.businessRuleViolation("user-status", "User is disabled"));
+            }
+            var token = tokenService.generateToken(user.get().getEmailValue());
+            return Result.success(ImmutablePair.of(user.get(), token));
+        } catch (IllegalArgumentException e) {
+            return Result.failure(ApplicationError.validationError("credentials", "Invalid email or password"));
         }
     }
 }
