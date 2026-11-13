@@ -1,0 +1,153 @@
+@startuml
+title Reliant Platform - Equipment Domain
+
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+package "equipment.domain.model.aggregates" {
+    class HvofSystem {
+        - Long id
+        - OrganizationId organizationId
+        - HvofSystemCode code
+        - String serialNumber
+        - String systemManufacturer
+        - String systemModel
+        - FuelType fuelType
+        - HvofSystemStatus status
+        - List<HvofSubsystem> subsystems
+        - List<Controller> controllers
+        + addSubsystem(type, name, alias, parameters)
+        + addController(number, deviceType, endpoint, protocols)
+    }
+
+    class Recipe {
+        - Long id
+        - HvofSystemId hvofSystemId
+        - int recipeNumber
+        - String name
+        - String powderSpecification
+        - RecipeStatus status
+        + publish()
+    }
+}
+
+package "equipment.domain.model.entities" {
+    class HvofSubsystem {
+        - Long id
+        - SubsystemType subsystemType
+        - String name
+        - String alias
+        - List<String> parameters
+    }
+
+    class Controller {
+        - Long id
+        - int controllerNumber
+        - DeviceType deviceType
+        - String serialNumber
+        - String manufacturer
+        - String model
+        - String partNumber
+        - NetworkEndpoint endpoint
+        - String endpointUrl
+        - String tagCatalogId
+        - List<Protocol> supportedProtocols
+    }
+}
+
+package "equipment.domain.model.valueobjects" {
+    class HvofSystemId
+    class RecipeStatus
+    class RecipeParameter
+    class RecipeApplicability
+    class ParameterBands
+    class UnitCategory
+    class SubsystemType
+    class DeviceType
+    class Protocol
+    class NetworkEndpoint
+    class FuelType
+    class HvofSystemStatus
+}
+
+package "equipment.infrastructure.persistence.jpa.entities" {
+    class HvofSystemPersistenceEntity
+    class RecipePersistenceEntity
+    class HvofSubsystemPersistenceEntity
+    class ControllerPersistenceEntity
+}
+
+package "equipment.infrastructure.persistence.jpa.embeddables" {
+    class NetworkEndpointPersistenceEmbeddable
+}
+
+package "equipment.infrastructure.persistence.jpa.assemblers" {
+    class HvofSystemPersistenceAssembler
+    class RecipePersistenceAssembler
+}
+
+package "equipment.application.commandservices" {
+    interface HvofSystemCommandService
+    interface RecipeCommandService
+}
+
+package "equipment.application.queryservices" {
+    interface HvofSystemQueryService
+    interface RecipeQueryService
+}
+
+package "equipment.interfaces.rest" {
+    class HvofSystemsController
+    class RecipesController
+}
+
+package "equipment.interfaces.rest.resources" {
+    class RegisterHvofSubsystemResource
+    class HvofSubsystemResource
+    class RegisterControllerResource
+    class ControllerResource
+    class CreateRecipeResource
+    class RecipeResource
+}
+
+HvofSystem "1" *-- "0..*" HvofSubsystem : subsystems
+HvofSystem "1" *-- "0..*" Controller : controllers
+
+Recipe --> HvofSystemId : references by id
+Recipe *-- RecipeParameter
+Recipe *-- RecipeApplicability
+RecipeParameter --> ParameterBands
+RecipeParameter --> UnitCategory
+
+Controller *-- NetworkEndpoint
+Controller --> DeviceType
+Controller --> Protocol
+HvofSubsystem --> SubsystemType
+
+HvofSystemPersistenceEntity "1" *-- "0..*" HvofSubsystemPersistenceEntity
+HvofSystemPersistenceEntity "1" *-- "0..*" ControllerPersistenceEntity
+ControllerPersistenceEntity *-- NetworkEndpointPersistenceEmbeddable
+
+HvofSystemPersistenceAssembler ..> HvofSystem
+HvofSystemPersistenceAssembler ..> HvofSystemPersistenceEntity
+RecipePersistenceAssembler ..> Recipe
+RecipePersistenceAssembler ..> RecipePersistenceEntity
+
+HvofSystemCommandService ..> HvofSystem
+HvofSystemQueryService ..> HvofSystem
+RecipeCommandService ..> Recipe
+RecipeQueryService ..> Recipe
+
+HvofSystemsController ..> HvofSystemCommandService
+HvofSystemsController ..> HvofSystemQueryService
+RecipesController ..> RecipeCommandService
+RecipesController ..> RecipeQueryService
+
+HvofSystemsController ..> RegisterHvofSubsystemResource
+HvofSystemsController ..> HvofSubsystemResource
+HvofSystemsController ..> RegisterControllerResource
+HvofSystemsController ..> ControllerResource
+RecipesController ..> CreateRecipeResource
+RecipesController ..> RecipeResource
+
+@enduml

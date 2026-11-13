@@ -1,0 +1,15 @@
+package com.innovacorp.reliant.platform.processmonitoring.interfaces.rest.transform;
+
+import com.innovacorp.reliant.platform.processmonitoring.domain.model.commands.IngestProcessReadingsCommand;
+import com.innovacorp.reliant.platform.processmonitoring.interfaces.rest.resources.IngestProcessReadingResource;
+
+import java.util.List;
+
+public class IngestProcessReadingsCommandFromResourceAssembler {
+    public static IngestProcessReadingsCommand toCommandFromResources(Long spraySessionId, List<IngestProcessReadingResource> resources) {
+        var items = resources.stream()
+                .map(r -> new IngestProcessReadingsCommand.ReadingItem(r.epochMillis(), r.plcClockOffsetMillis(), r.tagPath(), r.parameter(), r.subsystemId(), r.partId(), r.value()))
+                .toList();
+        return new IngestProcessReadingsCommand(spraySessionId, items);
+    }
+}
