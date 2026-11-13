@@ -22,16 +22,21 @@ The project is organized around bounded contexts plus a `shared` kernel, using a
 > Contexts are added incrementally; see the Features section for what is available in the current release.
 
 ## Features
-- **POST /api/v1/hvof-systems**: register an HVOF system for an organization.
-- **GET /api/v1/hvof-systems/{id}**: retrieve an HVOF system by id.
-- **GET /api/v1/hvof-systems?organizationId=...**: list the HVOF systems of an organization; always returns an array.
-- **GET /health**: liveness check.
-- **Interactive API docs**: Swagger UI at `/swagger-ui.html`, generated from the controllers.
+All endpoints live under `/api/v1` and, except sign-up and sign-in, require a `Bearer` JWT. The authenticated user's organization is the tenant boundary.
 
-<!-- Update this list on every release (recipes, authentication, traceability, spray sessions, readings, fault cases, notifications, report templates, certificates). -->
+| Bounded context | Endpoints |
+|---|---|
+| IAM | `POST /users` (sign-up: organization + administrator), `POST /tokens` (sign-in), `GET /users`, `GET /users/me`, `GET /users/{id}`, `PUT /users/{id}/roles`, `GET /roles` |
+| Equipment | `POST/GET /hvof-systems`, `GET /hvof-systems/{id}`, `POST/GET /hvof-systems/{id}/subsystems`, `POST/GET /hvof-systems/{id}/controllers`, `POST/GET /recipes`, `GET /recipes/{id}`, `PATCH /recipes/{id}/publication` |
+| Traceability | `POST/GET/PUT /customers`, `POST/GET /components?customerId=`, `POST/GET /recuperations`, `PATCH /recuperations/{id}/completion` |
+| Process Monitoring | `POST/GET /spray-sessions`, `PATCH /spray-sessions/{id}/completion`, `PATCH /spray-sessions/{id}/abortion`, `POST/GET /spray-sessions/{id}/readings`, `GET /spray-sessions/{id}/deviations`, `POST /spray-sessions/{id}/passes` |
+| Fault Diagnosis | `GET /fault-rules` (seeds the FESA defaults), `POST/PUT /fault-rules`, `GET /fault-cases?spraySessionId=&status=`, `PATCH /fault-cases/{id}/acknowledgement`, `PATCH /fault-cases/{id}/resolution` |
+| Reporting | `GET /report-templates` (seeds the standard templates), `POST/PUT /report-templates`, `PATCH /report-templates/{id}/status`, `POST/GET /generated-reports` |
+
+Out-of-band readings raise a domain event that opens a fault case with the probable cause and recommended action of the matching rule. Interactive API docs: Swagger UI at `/swagger-ui.html`.
 
 ## Technologies
-- Java 27 and Spring Boot 4
+- Java 21 (compiles with JDK 21 or newer) and Spring Boot 4
 - Apache Maven (or the bundled `./mvnw` wrapper)
 - Spring Web (REST controllers)
 - Spring Data JPA (Hibernate) with MySQL
@@ -42,7 +47,7 @@ The project is organized around bounded contexts plus a `shared` kernel, using a
 - PlantUML (architecture diagrams in `docs/`)
 
 ## Prerequisites
-- Java 27 or higher
+- JDK 21 or higher
 - Maven (or the bundled `./mvnw` wrapper)
 - MySQL 8.4+ running locally
 
@@ -55,7 +60,7 @@ The application resolves the active profile and database credentials from the en
 | `DATABASE_USER` | MySQL username |
 | `DATABASE_PASSWORD` | MySQL password |
 
-Production additionally reads `DB_HOST`, `DB_NAME`, `JWT_SECRET`, `CORS_ALLOWED_ORIGINS`, `NOTIFICATIONS_EMAIL_ENABLED` and `MAILCHIMP_API_KEY` (see `application-prod.properties`).
+Production (`SPRING_PROFILES_ACTIVE=prod`) reads `DATABASE_URL`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`, `JWT_SECRET` (32+ characters), `CORS_ALLOWED_ORIGINS` and `PORT` (see `application-prod.properties`). The schema is created on startup. Deployment on Azure App Service is described in [`docs/azure-deployment.md`](docs/azure-deployment.md).
 
 ## Spring profiles
 
@@ -63,7 +68,7 @@ Production additionally reads `DB_HOST`, `DB_NAME`, `JWT_SECRET`, `CORS_ALLOWED_
 |---|---|
 | *(default)* | Uses `localhost:3306` with SSL enabled; SQL logging off |
 | `dev` | Uses `localhost:3306` with SSL disabled; SQL logging on; creates the `reliant-os` database if missing |
-| `prod` | Builds the JDBC URL from env vars; SSL required |
+| `prod` | Builds the JDBC URL from env vars; SSL required; schema updated on startup |
 
 ## Architecture notes
 - `<context>.application.commandservices` and `<context>.application.queryservices` define the application-layer service contracts
