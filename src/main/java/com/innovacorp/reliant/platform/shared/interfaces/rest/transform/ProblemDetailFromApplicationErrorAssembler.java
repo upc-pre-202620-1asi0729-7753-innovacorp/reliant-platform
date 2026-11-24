@@ -29,18 +29,43 @@ public final class ProblemDetailFromApplicationErrorAssembler {
 
     public static ProblemDetail toProblemDetailFromApplicationError(ApplicationError error) {
         HttpStatusCode status = toStatusFromErrorCode(error.code());
-        String localizedMessage = toLocalizedMessageFromApplicationError(error);
+        String localizedDetails = toLocalizedDetailsOrRaw(error.details());
+        String localizedMessage = toLocalizedMessageFromApplicationError(error, localizedDetails);
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, localizedMessage);
         problemDetail.setType(toProblemTypeUri(error.code()));
         problemDetail.setTitle(toProblemTitle(error.code(), status));
         problemDetail.setProperty("code", error.code());
 
-        if (error.details() != null && !error.details().isBlank()) {
-            problemDetail.setProperty("details", error.details());
+        if (localizedDetails != null && !localizedDetails.isBlank()) {
+            problemDetail.setProperty("details", localizedDetails);
         }
 
         return problemDetail;
+    }
+
+    /**
+     * Domain guards throw {@code IllegalArgumentException} with a message-bundle key (e.g.
+     * {@code "validation.ruc.format"}) instead of an English sentence, and the application layer copies that
+     * key into {@link ApplicationError#details()}. This resolves it through the {@code messages} bundle for the
+     * request locale, falling back to the raw text when it is not a known key (an identifier, a free sentence).
+     *
+     * @param details the error details, expected to be a bundle key
+     * @return the localized details, or the raw details when they do not resolve to a known key
+     */
+    public static @Nullable String toLocalizedDetailsOrRaw(@Nullable String details) {
+        if (details == null || details.isBlank()) {
+            return details;
+        }
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle(MESSAGES_BASENAME, LocaleContextHolder.getLocale());
+            if (bundle.containsKey(details)) {
+                return bundle.getString(details);
+            }
+        } catch (MissingResourceException ignored) {
+            // fall through to the raw details
+        }
+        return details;
     }
 
     public static ResponseEntity<ProblemDetail> toResponseFromApplicationError(ApplicationError error) {
@@ -72,9 +97,10 @@ public final class ProblemDetailFromApplicationErrorAssembler {
         };
     }
 
-    private static String toLocalizedMessageFromApplicationError(ApplicationError error) {
+    private static String toLocalizedMessageFromApplicationError(ApplicationError error, @Nullable String localizedDetails) {
+        String details = localizedDetails == null ? "" : localizedDetails;
         String specificKey = toSpecificMessageKeyFromErrorCode(error.code());
-        String specificMessage = toLocalizedMessageOrNull(specificKey, error.details(), toEntityNameFromErrorCode(error.code()));
+        String specificMessage = toLocalizedMessageOrNull(specificKey, details, toEntityNameFromErrorCode(error.code()));
         if (specificMessage != null) {
             return specificMessage;
         }
@@ -83,7 +109,7 @@ public final class ProblemDetailFromApplicationErrorAssembler {
         return toLocalizedMessageWithFallback(
                 fallbackKey,
                 error.message(),
-                error.details(),
+                details,
                 toEntityNameFromErrorCode(error.code())
         );
     }
