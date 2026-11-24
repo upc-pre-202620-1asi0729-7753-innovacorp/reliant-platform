@@ -1,6 +1,5 @@
 package com.innovacorp.reliant.platform.equipment.domain.model.valueobjects;
 
-import java.util.Arrays;
 
 public enum DeviceType {
     PLC, OPC_UA_SERVER, GATEWAY;
@@ -9,7 +8,7 @@ public enum DeviceType {
         try {
             return DeviceType.valueOf(value.trim().toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new IllegalArgumentException("Device type must be one of " + Arrays.toString(values()));
+            throw new IllegalArgumentException("validation.device-type.invalid");
         }
     }
 }
