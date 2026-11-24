@@ -1,6 +1,5 @@
 package com.innovacorp.reliant.platform.reporting.domain.model.valueobjects;
 
-import java.util.Arrays;
 
 /** The record a generated report is about. */
 public enum ReportSubjectType {
@@ -10,7 +9,7 @@ public enum ReportSubjectType {
         try {
             return ReportSubjectType.valueOf(value.trim().toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new IllegalArgumentException("Subject type must be one of " + Arrays.toString(values()).toLowerCase());
+            throw new IllegalArgumentException("validation.report-subject-type.invalid");
         }
     }
 }
