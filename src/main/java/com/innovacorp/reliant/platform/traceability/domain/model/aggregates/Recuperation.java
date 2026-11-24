@@ -47,22 +47,22 @@ public class Recuperation extends AbstractDomainAggregateRoot<Recuperation> {
                         CustomerId customerId, String segment, String operation, Double weightValue, String weightUnitSymbol, Integer hourmeterAtEntry,
                         String powderSupplier, String powderLotNumber, String powderChemicalComposition, RecuperationStatus status,
                         LocalDate receivedAt, LocalDate completedAt, List<Long> linkedSessionIds) {
-        if (weightValue == null || weightValue <= 0) throw new IllegalArgumentException("Weight must be positive");
-        if (hourmeterAtEntry == null || hourmeterAtEntry < 0) throw new IllegalArgumentException("Hourmeter at entry must be zero or positive");
+        if (weightValue == null || weightValue <= 0) throw new IllegalArgumentException("validation.recuperation.weight.positive");
+        if (hourmeterAtEntry == null || hourmeterAtEntry < 0) throw new IllegalArgumentException("validation.recuperation.hourmeter.negative");
         this.id = id;
         this.supplierOrganizationId = Objects.requireNonNull(supplierOrganizationId, "supplierOrganizationId must not be null");
         this.workOrderNumber = Objects.requireNonNull(workOrderNumber, "workOrderNumber must not be null");
-        this.manufacturingOrderNumber = requireText(manufacturingOrderNumber, "Manufacturing order number");
+        this.manufacturingOrderNumber = requireText(manufacturingOrderNumber, "validation.recuperation.manufacturing-order-number.blank");
         this.componentId = Objects.requireNonNull(componentId, "componentId must not be null");
         this.customerId = Objects.requireNonNull(customerId, "customerId must not be null");
         this.segment = segment == null || segment.isBlank() ? "Mining" : segment.trim();
-        this.operation = requireText(operation, "Operation");
+        this.operation = requireText(operation, "validation.recuperation.operation.blank");
         this.weightValue = weightValue;
         this.weightUnitSymbol = weightUnitSymbol == null || weightUnitSymbol.isBlank() ? "kg" : weightUnitSymbol.trim();
         this.hourmeterAtEntry = hourmeterAtEntry;
-        this.powderSupplier = requireText(powderSupplier, "Powder supplier");
-        this.powderLotNumber = requireText(powderLotNumber, "Powder lot number");
-        this.powderChemicalComposition = requireText(powderChemicalComposition, "Powder chemical composition");
+        this.powderSupplier = requireText(powderSupplier, "validation.recuperation.powder-supplier.blank");
+        this.powderLotNumber = requireText(powderLotNumber, "validation.recuperation.powder-lot-number.blank");
+        this.powderChemicalComposition = requireText(powderChemicalComposition, "validation.recuperation.powder-chemical-composition.blank");
         this.status = Objects.requireNonNull(status, "status must not be null");
         this.receivedAt = receivedAt == null ? LocalDate.now() : receivedAt;
         this.completedAt = completedAt;
@@ -71,8 +71,8 @@ public class Recuperation extends AbstractDomainAggregateRoot<Recuperation> {
 
     public Recuperation(OrganizationId supplierOrganizationId, OpenRecuperationCommand c) {
         this(null, supplierOrganizationId, new WorkOrderNumber(c.workOrderNumber()), c.manufacturingOrderNumber(), new ComponentId(c.componentId()),
-             new CustomerId(c.customerId()), c.segment(), c.operation(), c.weightValue(), c.weightUnitSymbol(), c.hourmeterAtEntry(),
-             c.powderSupplier(), c.powderLotNumber(), c.powderChemicalComposition(), RecuperationStatus.RECEIVED, c.receivedAt(), null, List.of());
+                new CustomerId(c.customerId()), c.segment(), c.operation(), c.weightValue(), c.weightUnitSymbol(), c.hourmeterAtEntry(),
+                c.powderSupplier(), c.powderLotNumber(), c.powderChemicalComposition(), RecuperationStatus.RECEIVED, c.receivedAt(), null, List.of());
     }
 
     public static Recuperation reconstitute(Long id, OrganizationId supplierOrganizationId, WorkOrderNumber workOrderNumber, String manufacturingOrderNumber,
@@ -111,8 +111,8 @@ public class Recuperation extends AbstractDomainAggregateRoot<Recuperation> {
 
     public void onCreated() { registerDomainEvent(RecuperationOpenedEvent.from(this)); }
 
-    private static String requireText(String value, String label) {
-        if (value == null || value.isBlank()) throw new IllegalArgumentException(label + " must not be null or blank");
+    private static String requireText(String value, String messageKey) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException(messageKey);
         return value.trim();
     }
 }
