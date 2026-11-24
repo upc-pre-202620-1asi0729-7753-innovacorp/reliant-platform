@@ -23,16 +23,16 @@ public class RecipeParameter {
             UnitCategory unitCategory
     ) {
         if (parameter == null || !parameter.matches("^[a-z][a-z0-9_]{2,39}$")) {
-            throw new IllegalArgumentException("Invalid parameter name");
+            throw new IllegalArgumentException("validation.recipe-parameter.name.format");
         }
         if (bands == null) {
-            throw new IllegalArgumentException("Parameter bands are required");
+            throw new IllegalArgumentException("validation.recipe-parameter.bands.required");
         }
         if (!bands.contains(setpoint)) {
-            throw new IllegalArgumentException("Setpoint must be within nominal limits");
+            throw new IllegalArgumentException("validation.recipe-parameter.setpoint.out-of-nominal");
         }
         if (unitSymbol == null || unitSymbol.isBlank()) {
-            throw new IllegalArgumentException("Unit symbol is required");
+            throw new IllegalArgumentException("validation.recipe-parameter.unit-symbol.blank");
         }
 
         this.id = id;
