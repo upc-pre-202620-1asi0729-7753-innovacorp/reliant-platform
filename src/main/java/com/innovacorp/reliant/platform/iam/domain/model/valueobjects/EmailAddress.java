@@ -13,10 +13,10 @@ public record EmailAddress(@Email String address) {
 
     public EmailAddress {
         if (address == null || address.isBlank()) {
-            throw new IllegalArgumentException("Email address must not be null or blank");
+            throw new IllegalArgumentException("validation.email-address.blank");
         }
         if (!EMAIL_PATTERN.matcher(address).matches()) {
-            throw new IllegalArgumentException("Email address must be a valid format");
+            throw new IllegalArgumentException("validation.email-address.invalid-format");
         }
     }
 
