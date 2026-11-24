@@ -27,8 +27,8 @@ public class User extends AbstractDomainAggregateRoot<User> {
     private Set<Role> roles;
 
     public User(EmailAddress emailAddress, String fullName, String password, OrganizationId organizationId) {
-        if (fullName == null || fullName.isBlank()) throw new IllegalArgumentException("Full name must not be blank");
-        if (password == null || password.isBlank()) throw new IllegalArgumentException("Password hash must not be blank");
+        if (fullName == null || fullName.isBlank()) throw new IllegalArgumentException("validation.user.full-name.blank");
+        if (password == null || password.isBlank()) throw new IllegalArgumentException("validation.user.password.blank");
         this.emailAddress = Objects.requireNonNull(emailAddress, "emailAddress must not be null");
         this.fullName = fullName.trim();
         this.password = password;
