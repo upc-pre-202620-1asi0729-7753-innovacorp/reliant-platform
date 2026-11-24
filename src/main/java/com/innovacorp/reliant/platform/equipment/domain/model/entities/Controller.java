@@ -24,10 +24,10 @@ public class Controller {
 
     public Controller(int controllerNumber, DeviceType deviceType, String serialNumber, String manufacturer, String model, String partNumber,
                       NetworkEndpoint endpoint, String endpointUrl, String tagCatalogId, List<Protocol> supportedProtocols) {
-        if (controllerNumber <= 0) throw new IllegalArgumentException("Controller number must be positive");
-        if (serialNumber == null || serialNumber.isBlank()) throw new IllegalArgumentException("Controller serial number must not be blank");
-        if (manufacturer == null || manufacturer.isBlank()) throw new IllegalArgumentException("Controller manufacturer must not be blank");
-        if (model == null || model.isBlank()) throw new IllegalArgumentException("Controller model must not be blank");
+        if (controllerNumber <= 0) throw new IllegalArgumentException("validation.controller.number.positive");
+        if (serialNumber == null || serialNumber.isBlank()) throw new IllegalArgumentException("validation.controller.serial-number.blank");
+        if (manufacturer == null || manufacturer.isBlank()) throw new IllegalArgumentException("validation.controller.manufacturer.blank");
+        if (model == null || model.isBlank()) throw new IllegalArgumentException("validation.controller.model.blank");
         this.controllerNumber = controllerNumber;
         this.deviceType = Objects.requireNonNull(deviceType, "deviceType must not be null");
         this.serialNumber = serialNumber.trim();
