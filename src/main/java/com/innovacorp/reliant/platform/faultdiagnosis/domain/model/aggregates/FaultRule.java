@@ -26,7 +26,7 @@ public class FaultRule extends AbstractDomainAggregateRoot<FaultRule> {
     private int cooldownSeconds;
 
     public FaultRule(Long id, OrganizationId organizationId, String parameter, FaultBand band, String probableCause, String recommendedAction, Integer cooldownSeconds) {
-        if (parameter == null || !parameter.matches("^[a-z][a-z0-9_]{2,39}$")) throw new IllegalArgumentException("Parameter must be snake_case, e.g. fuel_gas_flow");
+        if (parameter == null || !parameter.matches("^[a-z][a-z0-9_]{2,39}$")) throw new IllegalArgumentException("validation.fault-rule.parameter.format");
         this.id = id;
         this.organizationId = Objects.requireNonNull(organizationId, "organizationId must not be null");
         this.parameter = parameter;
@@ -47,9 +47,9 @@ public class FaultRule extends AbstractDomainAggregateRoot<FaultRule> {
     }
 
     private void update(String probableCause, String recommendedAction, Integer cooldownSeconds) {
-        if (probableCause == null || probableCause.isBlank()) throw new IllegalArgumentException("Probable cause must not be blank");
-        if (recommendedAction == null || recommendedAction.isBlank()) throw new IllegalArgumentException("Recommended action must not be blank");
-        if (cooldownSeconds != null && cooldownSeconds < 0) throw new IllegalArgumentException("Cooldown must be zero or positive");
+        if (probableCause == null || probableCause.isBlank()) throw new IllegalArgumentException("validation.fault-rule.probable-cause.blank");
+        if (recommendedAction == null || recommendedAction.isBlank()) throw new IllegalArgumentException("validation.fault-rule.recommended-action.blank");
+        if (cooldownSeconds != null && cooldownSeconds < 0) throw new IllegalArgumentException("validation.fault-rule.cooldown.negative");
         this.probableCause = probableCause.trim();
         this.recommendedAction = recommendedAction.trim();
         this.cooldownSeconds = cooldownSeconds == null ? 60 : cooldownSeconds;
