@@ -41,9 +41,9 @@ public class SpraySession extends AbstractDomainAggregateRoot<SpraySession> {
     public SpraySession(Long id, OrganizationId organizationId, HvofSystemId hvofSystemId, RecuperationId recuperationId, Long operatorId, Integer recipeNumber,
                         Instant startedAt, Instant endedAt, String timeZone, SpraySessionStatus status, String abortReason,
                         List<RecipeBand> recipeBands, List<SprayPass> passes) {
-        if (operatorId == null || operatorId <= 0) throw new IllegalArgumentException("Operator id must be positive");
-        if (recipeNumber == null || recipeNumber <= 0) throw new IllegalArgumentException("Recipe number must be positive");
-        if (recipeBands == null || recipeBands.isEmpty()) throw new IllegalArgumentException("A session needs the bands of an active recipe");
+        if (operatorId == null || operatorId <= 0) throw new IllegalArgumentException("validation.spray-session.operator-id.positive");
+        if (recipeNumber == null || recipeNumber <= 0) throw new IllegalArgumentException("validation.recipe-number.positive");
+        if (recipeBands == null || recipeBands.isEmpty()) throw new IllegalArgumentException("validation.spray-session.recipe-bands.empty");
         this.id = id;
         this.organizationId = Objects.requireNonNull(organizationId, "organizationId must not be null");
         this.hvofSystemId = Objects.requireNonNull(hvofSystemId, "hvofSystemId must not be null");
@@ -108,7 +108,7 @@ public class SpraySession extends AbstractDomainAggregateRoot<SpraySession> {
 
     public void abort(String reason) {
         if (!isActive()) throw new IllegalStateException("Only active sessions can be aborted");
-        if (reason == null || reason.isBlank()) throw new IllegalArgumentException("Abort reason must not be blank");
+        if (reason == null || reason.isBlank()) throw new IllegalArgumentException("validation.spray-session.abort-reason.blank");
         status = SpraySessionStatus.ABORTED;
         abortReason = reason.trim();
         endedAt = Instant.now();
