@@ -15,9 +15,9 @@ public class SprayPass {
     private final Instant endedAt;
 
     public SprayPass(int passNumber, Instant startedAt, Instant endedAt) {
-        if (passNumber <= 0) throw new IllegalArgumentException("Pass number must be positive");
-        if (startedAt == null) throw new IllegalArgumentException("Pass start time is required");
-        if (endedAt != null && endedAt.isBefore(startedAt)) throw new IllegalArgumentException("Pass end time must be after its start time");
+        if (passNumber <= 0) throw new IllegalArgumentException("validation.spray-pass.number.positive");
+        if (startedAt == null) throw new IllegalArgumentException("validation.spray-pass.started-at.required");
+        if (endedAt != null && endedAt.isBefore(startedAt)) throw new IllegalArgumentException("validation.spray-pass.ended-at.before-start");
         this.passNumber = passNumber;
         this.startedAt = startedAt;
         this.endedAt = endedAt;
