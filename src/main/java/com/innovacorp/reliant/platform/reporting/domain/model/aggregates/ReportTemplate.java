@@ -106,10 +106,10 @@ public class ReportTemplate extends AbstractDomainAggregateRoot<ReportTemplate> 
 
     private void apply(String name, String description, String primaryColor, String secondaryColor, String headerText, String footerText,
                        String pageSize, String orientation, boolean showSignatureBlock, boolean defaultForKind, List<ReportSectionItem> sectionItems) {
-        if (name == null || name.isBlank()) throw new IllegalArgumentException("Template name must not be blank");
-        if (sectionItems == null || sectionItems.isEmpty()) throw new IllegalArgumentException("A template needs at least one section");
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("validation.report-template.name.blank");
+        if (sectionItems == null || sectionItems.isEmpty()) throw new IllegalArgumentException("validation.report-template.sections.empty");
         if (sectionItems.stream().map(ReportSectionItem::sectionOrder).distinct().count() != sectionItems.size()) {
-            throw new IllegalArgumentException("Section orders must be unique");
+            throw new IllegalArgumentException("validation.report-template.section-orders.duplicate");
         }
         this.name = name.trim();
         this.description = description == null ? "" : description.trim();
