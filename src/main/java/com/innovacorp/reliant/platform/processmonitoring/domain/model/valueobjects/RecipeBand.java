@@ -7,7 +7,7 @@ package com.innovacorp.reliant.platform.processmonitoring.domain.model.valueobje
 public record RecipeBand(String parameter, double setpoint, double lowerShutdown, double lowerWarning, double nominalMin,
                          double nominalMax, double upperWarning, double upperShutdown, String unitSymbol, String unitCategory) {
     public RecipeBand {
-        if (parameter == null || parameter.isBlank()) throw new IllegalArgumentException("Recipe band parameter must not be blank");
+        if (parameter == null || parameter.isBlank()) throw new IllegalArgumentException("validation.recipe-band.parameter.blank");
     }
 
     public Band classify(double value) {
