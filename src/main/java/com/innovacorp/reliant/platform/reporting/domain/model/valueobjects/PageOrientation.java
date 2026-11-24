@@ -1,6 +1,5 @@
 package com.innovacorp.reliant.platform.reporting.domain.model.valueobjects;
 
-import java.util.Arrays;
 
 public enum PageOrientation {
     PORTRAIT, LANDSCAPE;
@@ -9,7 +8,7 @@ public enum PageOrientation {
         try {
             return PageOrientation.valueOf(value.trim().toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new IllegalArgumentException("Orientation must be one of " + Arrays.toString(values()).toLowerCase());
+            throw new IllegalArgumentException("validation.page-orientation.invalid");
         }
     }
 }
