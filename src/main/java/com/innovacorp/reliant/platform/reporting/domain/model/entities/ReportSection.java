@@ -15,11 +15,11 @@ public class ReportSection {
     private final List<ReportWidget> widgets;
 
     public ReportSection(Long id, String title, int sectionOrder, List<ReportWidget> widgets) {
-        if (title == null || title.isBlank()) throw new IllegalArgumentException("Section title must not be blank");
-        if (sectionOrder < 1) throw new IllegalArgumentException("Section order must be positive");
-        if (widgets == null || widgets.isEmpty()) throw new IllegalArgumentException("Each section needs at least one widget");
+        if (title == null || title.isBlank()) throw new IllegalArgumentException("validation.report-section.title.blank");
+        if (sectionOrder < 1) throw new IllegalArgumentException("validation.report-section.order.positive");
+        if (widgets == null || widgets.isEmpty()) throw new IllegalArgumentException("validation.report-section.widgets.empty");
         if (widgets.stream().map(ReportWidget::position).distinct().count() != widgets.size()) {
-            throw new IllegalArgumentException("Widget positions must be unique within a section");
+            throw new IllegalArgumentException("validation.report-section.widget-positions.duplicate");
         }
         this.id = id;
         this.title = title.trim();
