@@ -14,7 +14,7 @@ public record ParameterBands(
                 && nominalMin <= nominalMax
                 && nominalMax <= upperWarning
                 && upperWarning <= upperShutdown)) {
-            throw new IllegalArgumentException("Parameter bands must be in ascending order");
+            throw new IllegalArgumentException("validation.parameter-bands.order");
         }
     }
 

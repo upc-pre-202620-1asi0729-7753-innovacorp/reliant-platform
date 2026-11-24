@@ -7,13 +7,13 @@ public record RecipeApplicability(
 ) {
     public RecipeApplicability {
         if (componentType == null || componentType.isBlank()) {
-            throw new IllegalArgumentException("Component type is required");
+            throw new IllegalArgumentException("validation.recipe-applicability.component-type.blank");
         }
         if (machineModel == null || machineModel.isBlank()) {
-            throw new IllegalArgumentException("Machine model is required");
+            throw new IllegalArgumentException("validation.recipe-applicability.machine-model.blank");
         }
         if (position == null || position.isBlank()) {
-            throw new IllegalArgumentException("Position is required");
+            throw new IllegalArgumentException("validation.recipe-applicability.position.blank");
         }
 
         componentType = componentType.trim().toUpperCase();
