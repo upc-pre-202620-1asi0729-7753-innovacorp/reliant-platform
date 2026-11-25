@@ -6,7 +6,6 @@ import com.innovacorp.reliant.platform.reporting.domain.model.valueobjects.Repor
 import com.innovacorp.reliant.platform.shared.domain.model.aggregates.AbstractDomainAggregateRoot;
 import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -18,7 +17,6 @@ import java.util.Objects;
 @Getter
 public class GeneratedReport extends AbstractDomainAggregateRoot<GeneratedReport> {
 
-    @Setter
     private Long id;
     private final Long reportTemplateId;
     private final OrganizationId organizationId;
