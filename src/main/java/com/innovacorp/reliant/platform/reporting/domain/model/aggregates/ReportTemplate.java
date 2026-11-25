@@ -9,7 +9,6 @@ import com.innovacorp.reliant.platform.reporting.domain.model.valueobjects.*;
 import com.innovacorp.reliant.platform.shared.domain.model.aggregates.AbstractDomainAggregateRoot;
 import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Comparator;
 import java.util.List;
@@ -21,7 +20,6 @@ import java.util.Objects;
 @Getter
 public class ReportTemplate extends AbstractDomainAggregateRoot<ReportTemplate> {
 
-    @Setter
     private Long id;
     private final OrganizationId organizationId;
     private final Long ownerUserId;
