@@ -6,7 +6,6 @@ import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.Organizatio
 import com.innovacorp.reliant.platform.iam.domain.model.valueobjects.Ruc;
 import com.innovacorp.reliant.platform.shared.domain.model.aggregates.AbstractDomainAggregateRoot;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Objects;
 
@@ -16,7 +15,6 @@ import java.util.Objects;
 @Getter
 public class Organization extends AbstractDomainAggregateRoot<Organization> {
 
-    @Setter
     private Long id;
     private final String legalName;
     private final Ruc ruc;
