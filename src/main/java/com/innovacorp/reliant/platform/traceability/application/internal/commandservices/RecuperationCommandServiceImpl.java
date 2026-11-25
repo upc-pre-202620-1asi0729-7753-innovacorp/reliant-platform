@@ -87,7 +87,7 @@ public class RecuperationCommandServiceImpl implements RecuperationCommandServic
         }
     }
 
-    /** Called by the ACL facade from Process Monitoring; no user check (the caller already validated the tenant). */
+    /** Reaction to SpraySessionStartedIntegrationEvent; no user check (Process Monitoring already validated the tenant). */
     @Override
     public Result<Recuperation, ApplicationError> handle(LinkSessionToRecuperationCommand command) {
         var recuperation = recuperationRepository.findById(command.recuperationId());

@@ -62,8 +62,8 @@ public class SpraySessionCommandServiceImpl implements SpraySessionCommandServic
         try {
             var session = new SpraySession(new OrganizationId(currentUser.organizationId()), new HvofSystemId(command.hvofSystemId()),
                     new RecuperationId(command.recuperationId()), currentUser.userId(), command.recipeNumber(), command.timeZone(), bands);
+            // Saving publishes SpraySessionStartedEvent; Traceability links the session to the recuperation by reacting to it.
             var saved = sessionRepository.save(session);
-            externalTraceabilityService.linkSessionToRecuperation(command.recuperationId(), saved.getId());
             return Result.success(saved);
         } catch (IllegalArgumentException e) {
             return Result.failure(ApplicationError.validationError("SpraySession", e.getMessage()));
