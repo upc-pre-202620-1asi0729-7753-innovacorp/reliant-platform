@@ -1,12 +1,10 @@
 package com.innovacorp.reliant.platform.faultdiagnosis.application.internal.commandservices;
 
 import com.innovacorp.reliant.platform.faultdiagnosis.application.commandservices.FaultCaseCommandService;
-import com.innovacorp.reliant.platform.faultdiagnosis.application.commandservices.FaultRuleCommandService;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.aggregates.FaultCase;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.commands.AcknowledgeFaultCaseCommand;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.commands.OpenFaultCaseCommand;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.commands.ResolveFaultCaseCommand;
-import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.commands.SeedDefaultFaultRulesCommand;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.valueobjects.FaultBand;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.valueobjects.HvofSystemId;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.valueobjects.SpraySessionId;
@@ -25,14 +23,11 @@ import java.util.Optional;
 public class FaultCaseCommandServiceImpl implements FaultCaseCommandService {
     private final FaultCaseRepository caseRepository;
     private final FaultRuleRepository ruleRepository;
-    private final FaultRuleCommandService ruleCommandService;
     private final CurrentUserProvider currentUserProvider;
 
-    public FaultCaseCommandServiceImpl(FaultCaseRepository caseRepository, FaultRuleRepository ruleRepository,
-                                       FaultRuleCommandService ruleCommandService, CurrentUserProvider currentUserProvider) {
+    public FaultCaseCommandServiceImpl(FaultCaseRepository caseRepository, FaultRuleRepository ruleRepository, CurrentUserProvider currentUserProvider) {
         this.caseRepository = caseRepository;
         this.ruleRepository = ruleRepository;
-        this.ruleCommandService = ruleCommandService;
         this.currentUserProvider = currentUserProvider;
     }
 
@@ -42,7 +37,7 @@ public class FaultCaseCommandServiceImpl implements FaultCaseCommandService {
         var band = FaultBand.fromString(command.band());
         var spraySessionId = new SpraySessionId(command.spraySessionId());
 
-        ruleCommandService.handle(new SeedDefaultFaultRulesCommand(command.organizationId()));
+        // The organization's rules were seeded when it registered (OrganizationRegisteredIntegrationEvent); no rule, no case.
         var rule = ruleRepository.findByOrganizationIdAndParameterAndBand(organizationId, command.parameter(), band);
         if (rule.isEmpty()) return Optional.empty();
 
