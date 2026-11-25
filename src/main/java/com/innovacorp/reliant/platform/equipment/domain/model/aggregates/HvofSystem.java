@@ -8,7 +8,6 @@ import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.*;
 import com.innovacorp.reliant.platform.shared.domain.model.aggregates.AbstractDomainAggregateRoot;
 import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +16,6 @@ import java.util.Objects;
 @Getter
 public class HvofSystem extends AbstractDomainAggregateRoot<HvofSystem> {
 
-    @Setter
     private Long id;
     private final OrganizationId organizationId;
     private final HvofSystemCode code;
