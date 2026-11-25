@@ -2,7 +2,7 @@ package com.innovacorp.reliant.platform.faultdiagnosis.interfaces.rest;
 
 import com.innovacorp.reliant.platform.faultdiagnosis.application.commandservices.FaultRuleCommandService;
 import com.innovacorp.reliant.platform.faultdiagnosis.application.queryservices.FaultRuleQueryService;
-import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.commands.SeedDefaultFaultRulesCommand;
+import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.commands.RestoreDefaultFaultRulesCommand;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.queries.GetAllFaultRulesByOrganizationIdQuery;
 import com.innovacorp.reliant.platform.faultdiagnosis.interfaces.rest.resources.CreateFaultRuleResource;
 import com.innovacorp.reliant.platform.faultdiagnosis.interfaces.rest.resources.FaultRuleResource;
@@ -43,15 +43,32 @@ public class FaultRulesController {
     }
 
     @GetMapping
-    @Operation(summary = "Get the fault rules of the authenticated organization", description = "Seeds the default rules the first time.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Get the fault rules of the authenticated organization",
+            description = "The FESA defaults are seeded when the supplier organization registers; POST /defaults adds back any missing one.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Rules retrieved", content = @Content(schema = @Schema(implementation = FaultRuleResource.class)))
     })
     public ResponseEntity<List<FaultRuleResource>> getAllFaultRules(@RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
         var organizationId = currentUserProvider.current().organizationId();
-        commandService.handle(new SeedDefaultFaultRulesCommand(organizationId));
         var rules = queryService.handle(new GetAllFaultRulesByOrganizationIdQuery(new OrganizationId(organizationId)));
         return ResponseEntity.ok(rules.stream().map(FaultRuleResourceFromEntityAssembler::toResourceFromEntity).toList());
+    }
+
+    @PostMapping("/defaults")
+    @Operation(summary = "Restore the FESA default fault rules", description = "Adds back every default rule the organization is missing; customized rules are kept.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "All the rules of the organization after the restoration", content = @Content(schema = @Schema(implementation = FaultRuleResource.class))),
+            @ApiResponse(responseCode = "403", description = "Administrator role required")
+    })
+    public ResponseEntity<?> restoreDefaultFaultRules(@RequestHeader(value = "Accept-Language", required = false) String acceptLanguage) {
+        var organizationId = currentUserProvider.current().organizationId();
+        var result = commandService.handle(new RestoreDefaultFaultRulesCommand(organizationId));
+        return ResponseEntityAssembler.toResponseEntityFromResult(result,
+                added -> queryService.handle(new GetAllFaultRulesByOrganizationIdQuery(new OrganizationId(organizationId))).stream()
+                        .map(FaultRuleResourceFromEntityAssembler::toResourceFromEntity).toList(),
+                HttpStatus.OK);
     }
 
     @PostMapping
