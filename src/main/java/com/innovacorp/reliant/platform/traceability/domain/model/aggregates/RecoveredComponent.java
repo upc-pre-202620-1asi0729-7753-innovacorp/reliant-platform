@@ -7,7 +7,6 @@ import com.innovacorp.reliant.platform.traceability.domain.model.valueobjects.Co
 import com.innovacorp.reliant.platform.traceability.domain.model.valueobjects.ComponentType;
 import com.innovacorp.reliant.platform.traceability.domain.model.valueobjects.CustomerId;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Objects;
 
@@ -17,7 +16,6 @@ import java.util.Objects;
 @Getter
 public class RecoveredComponent extends AbstractDomainAggregateRoot<RecoveredComponent> {
 
-    @Setter
     private Long id;
     private final CustomerId customerId;
     private final String serialNumber;

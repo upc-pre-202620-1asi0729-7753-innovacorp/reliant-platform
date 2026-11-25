@@ -5,7 +5,6 @@ import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.valueobjects.
 import com.innovacorp.reliant.platform.shared.domain.model.aggregates.AbstractDomainAggregateRoot;
 import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Date;
 import java.util.Objects;
@@ -16,7 +15,6 @@ import java.util.Objects;
 @Getter
 public class FaultCase extends AbstractDomainAggregateRoot<FaultCase> {
 
-    @Setter
     private Long id;
     private final OrganizationId organizationId;
     private final SpraySessionId spraySessionId;
@@ -70,7 +68,7 @@ public class FaultCase extends AbstractDomainAggregateRoot<FaultCase> {
     }
 
     public void onOpened() {
-        registerEvent(new FaultCaseOpenedEvent(id, organizationId.organizationId(), spraySessionId.spraySessionId(), parameter, band.name(), probableCause));
+        registerDomainEvent(new FaultCaseOpenedEvent(id, organizationId.organizationId(), spraySessionId.spraySessionId(), parameter, band.name(), probableCause));
     }
 
     public void acknowledge(UserId userId) {
@@ -89,15 +87,27 @@ public class FaultCase extends AbstractDomainAggregateRoot<FaultCase> {
         this.status = FaultCaseStatus.RESOLVED;
     }
 
-    public boolean isOwnedBy(Long organizationId) { return this.organizationId.organizationId().equals(organizationId); }
+    public boolean isOwnedBy(Long organizationId) {
+        return this.organizationId.organizationId().equals(organizationId);
+    }
 
-    public Long getOrganizationIdValue() { return organizationId.organizationId(); }
+    public Long getOrganizationIdValue() {
+        return organizationId.organizationId();
+    }
 
-    public Long getSpraySessionIdValue() { return spraySessionId.spraySessionId(); }
+    public Long getSpraySessionIdValue() {
+        return spraySessionId.spraySessionId();
+    }
 
-    public Long getHvofSystemIdValue() { return hvofSystemId.hvofSystemId(); }
+    public Long getHvofSystemIdValue() {
+        return hvofSystemId.hvofSystemId();
+    }
 
-    public Long getAcknowledgedByValue() { return acknowledgedBy == null ? null : acknowledgedBy.userId(); }
+    public Long getAcknowledgedByValue() {
+        return acknowledgedBy == null ? null : acknowledgedBy.userId();
+    }
 
-    public Long getResolvedByValue() { return resolvedBy == null ? null : resolvedBy.userId(); }
+    public Long getResolvedByValue() {
+        return resolvedBy == null ? null : resolvedBy.userId();
+    }
 }

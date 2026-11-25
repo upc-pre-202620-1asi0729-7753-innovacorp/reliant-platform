@@ -9,23 +9,24 @@ import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.HvofS
 import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.RecipeApplicability;
 import com.innovacorp.reliant.platform.equipment.domain.model.valueobjects.RecipeStatus;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Recipe aggregate root: the process window (setpoint and bands per parameter) of an HVOF system, published DRAFT -> ACTIVE -> RETIRED.
+ */
 @Getter
-@Setter
 public class Recipe extends AbstractDomainAggregateRoot<Recipe> {
 
     private Long id;
-    private HvofSystemId hvofSystemId;
-    private Integer recipeNumber;
-    private String name;
-    private String powderSpecification;
+    private final HvofSystemId hvofSystemId;
+    private final Integer recipeNumber;
+    private final String name;
+    private final String powderSpecification;
     private RecipeStatus status;
-    private List<RecipeApplicability> applicabilities;
-    private List<RecipeParameter> parameters;
+    private final List<RecipeApplicability> applicabilities;
+    private final List<RecipeParameter> parameters;
 
     public Recipe(
             HvofSystemId hvofSystemId,
@@ -59,8 +60,6 @@ public class Recipe extends AbstractDomainAggregateRoot<Recipe> {
         this.parameters = parameters == null
                 ? new ArrayList<>()
                 : new ArrayList<>(parameters);
-
-        onCreated();
     }
 
     public Recipe(CreateRecipeCommand command) {
@@ -133,7 +132,7 @@ public class Recipe extends AbstractDomainAggregateRoot<Recipe> {
             throw new IllegalStateException("Only draft recipes can be published");
         }
         this.status = RecipeStatus.ACTIVE;
-        registerEvent(RecipePublishedEvent.from(this));
+        registerDomainEvent(RecipePublishedEvent.from(this));
     }
 
     public void retire() {
@@ -154,7 +153,8 @@ public class Recipe extends AbstractDomainAggregateRoot<Recipe> {
         return hvofSystemId.hvofSystemId();
     }
 
-    private void onCreated() {
-        registerEvent(RecipeCreatedEvent.from(this));
+    /** Called by the repository adapter once the id is known, so the creation event carries it. Never on reconstitution. */
+    public void onCreated() {
+        registerDomainEvent(RecipeCreatedEvent.from(this));
     }
 }

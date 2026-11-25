@@ -6,7 +6,6 @@ import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.valueobjects.
 import com.innovacorp.reliant.platform.shared.domain.model.aggregates.AbstractDomainAggregateRoot;
 import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Objects;
 
@@ -16,7 +15,6 @@ import java.util.Objects;
 @Getter
 public class FaultRule extends AbstractDomainAggregateRoot<FaultRule> {
 
-    @Setter
     private Long id;
     private final OrganizationId organizationId;
     private final String parameter;
@@ -55,7 +53,11 @@ public class FaultRule extends AbstractDomainAggregateRoot<FaultRule> {
         this.cooldownSeconds = cooldownSeconds == null ? 60 : cooldownSeconds;
     }
 
-    public boolean isOwnedBy(Long organizationId) { return this.organizationId.organizationId().equals(organizationId); }
+    public boolean isOwnedBy(Long organizationId) {
+        return this.organizationId.organizationId().equals(organizationId);
+    }
 
-    public Long getOrganizationIdValue() { return organizationId.organizationId(); }
+    public Long getOrganizationIdValue() {
+        return organizationId.organizationId();
+    }
 }

@@ -10,7 +10,6 @@ import com.innovacorp.reliant.platform.traceability.domain.model.valueobjects.Cu
 import com.innovacorp.reliant.platform.traceability.domain.model.valueobjects.RecuperationStatus;
 import com.innovacorp.reliant.platform.traceability.domain.model.valueobjects.WorkOrderNumber;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import java.util.Objects;
 @Getter
 public class Recuperation extends AbstractDomainAggregateRoot<Recuperation> {
 
-    @Setter
     private Long id;
     private final OrganizationId supplierOrganizationId;
     private final WorkOrderNumber workOrderNumber;

@@ -7,7 +7,6 @@ import com.innovacorp.reliant.platform.traceability.domain.model.commands.Update
 import com.innovacorp.reliant.platform.traceability.domain.model.events.CustomerRegisteredEvent;
 import com.innovacorp.reliant.platform.traceability.domain.model.valueobjects.Ruc;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Objects;
 
@@ -17,7 +16,6 @@ import java.util.Objects;
 @Getter
 public class Customer extends AbstractDomainAggregateRoot<Customer> {
 
-    @Setter
     private Long id;
     private final OrganizationId supplierOrganizationId;
     private Long linkedAssetOwnerOrganizationId;
