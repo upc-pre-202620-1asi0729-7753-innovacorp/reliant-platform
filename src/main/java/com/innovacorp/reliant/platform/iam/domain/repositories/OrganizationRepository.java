@@ -14,4 +14,6 @@ public interface OrganizationRepository {
     boolean existsByRuc(Ruc ruc);
 
     Optional<Organization> findById(Long id);
+
+    Optional<Organization> findByRuc(Ruc ruc);
 }
