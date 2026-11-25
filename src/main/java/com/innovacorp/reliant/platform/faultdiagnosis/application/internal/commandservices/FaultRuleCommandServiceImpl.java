@@ -1,8 +1,10 @@
+
 package com.innovacorp.reliant.platform.faultdiagnosis.application.internal.commandservices;
 
 import com.innovacorp.reliant.platform.faultdiagnosis.application.commandservices.FaultRuleCommandService;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.aggregates.FaultRule;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.commands.CreateFaultRuleCommand;
+import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.commands.RestoreDefaultFaultRulesCommand;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.commands.SeedDefaultFaultRulesCommand;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.commands.UpdateFaultRuleCommand;
 import com.innovacorp.reliant.platform.faultdiagnosis.domain.model.valueobjects.FaultBand;
@@ -89,7 +91,27 @@ public class FaultRuleCommandServiceImpl implements FaultRuleCommandService {
     public void handle(SeedDefaultFaultRulesCommand command) {
         var organizationId = new OrganizationId(command.organizationId());
         if (ruleRepository.existsByOrganizationId(organizationId)) return;
-        DEFAULT_RULES.forEach(r -> ruleRepository.save(
-                new FaultRule(null, organizationId, r[0], FaultBand.valueOf(r[1]), r[2], r[3], DEFAULT_COOLDOWN_SECONDS)));
+        saveMissingDefaults(organizationId);
+    }
+
+    @Override
+    public Result<List<FaultRule>, ApplicationError> handle(RestoreDefaultFaultRulesCommand command) {
+        var currentUser = currentUserProvider.current();
+        if (!currentUser.hasRole("ROLE_ORG_ADMIN") || !currentUser.organizationId().equals(command.organizationId())) {
+            return Result.failure(new ApplicationError("ACCESS_FORBIDDEN", "Access forbidden", "Only organization administrators manage fault rules"));
+        }
+        try {
+            return Result.success(saveMissingDefaults(new OrganizationId(command.organizationId())));
+        } catch (Exception e) {
+            return Result.failure(ApplicationError.unexpected("Fault rules restoration", e.getMessage()));
+        }
+    }
+
+    /** Saves every default (parameter, band) pair the organization does not have yet; customized rules are kept untouched. */
+    private List<FaultRule> saveMissingDefaults(OrganizationId organizationId) {
+        return DEFAULT_RULES.stream()
+                .filter(r -> ruleRepository.findByOrganizationIdAndParameterAndBand(organizationId, r[0], FaultBand.valueOf(r[1])).isEmpty())
+                .map(r -> ruleRepository.save(new FaultRule(null, organizationId, r[0], FaultBand.valueOf(r[1]), r[2], r[3], DEFAULT_COOLDOWN_SECONDS)))
+                .toList();
     }
 }
