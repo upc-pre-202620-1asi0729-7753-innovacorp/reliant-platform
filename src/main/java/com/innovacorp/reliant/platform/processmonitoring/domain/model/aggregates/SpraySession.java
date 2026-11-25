@@ -9,7 +9,6 @@ import com.innovacorp.reliant.platform.processmonitoring.domain.model.valueobjec
 import com.innovacorp.reliant.platform.shared.domain.model.aggregates.AbstractDomainAggregateRoot;
 import com.innovacorp.reliant.platform.shared.domain.model.valueobjects.OrganizationId;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import java.util.Optional;
 @Getter
 public class SpraySession extends AbstractDomainAggregateRoot<SpraySession> {
 
-    @Setter
     private Long id;
     private final OrganizationId organizationId;
     private final HvofSystemId hvofSystemId;
