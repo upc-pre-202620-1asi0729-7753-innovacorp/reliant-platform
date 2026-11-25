@@ -6,7 +6,7 @@ package com.innovacorp.reliant.platform.shared.domain.model.valueobjects;
 public record OrganizationId(Long organizationId) {
     public OrganizationId {
         if (organizationId == null || organizationId <= 0) {
-            throw new IllegalArgumentException("Organization id must be a positive number");
+            throw new IllegalArgumentException("validation.organization-id.positive");
         }
     }
 }

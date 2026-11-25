@@ -3,6 +3,7 @@ package com.innovacorp.reliant.platform.shared.interfaces.rest;
 import com.innovacorp.reliant.platform.shared.application.result.ApplicationError;
 import com.innovacorp.reliant.platform.shared.interfaces.rest.transform.ProblemDetailFromApplicationErrorAssembler;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -60,9 +61,34 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ProblemDetail> handleIllegalArgumentException(IllegalArgumentException ex) {
         var applicationError = ApplicationError.validationError(
                 resolveMessageOrDefault("validation.request.argument", "request-argument"),
-                ex.getMessage() != null ? ex.getMessage() : resolveMessageOrDefault("validation.request.failed", "Request validation failed")
+                resolveLocalizedDetailOrRaw(ex.getMessage())
         );
         return ProblemDetailFromApplicationErrorAssembler.toResponseFromApplicationError(applicationError);
+    }
+
+    /**
+     * Domain validation guards throw {@code IllegalArgumentException} with a message-bundle key
+     * (e.g. {@code "validation.hvof-system-code.format"}) instead of a literal English sentence, so this
+     * resolves it through the same bundle {@link #resolveMessageOrDefault} already uses for titles,
+     * falling back to the raw message untouched if it isn't a known key, which covers any
+     * {@code IllegalArgumentException} not thrown by our own validation guards.
+     *
+     * @param messageOrKey the exception's message, expected to be a bundle key
+     * @return the localized detail, or the raw message if it doesn't resolve to a known key
+     */
+    private String resolveLocalizedDetailOrRaw(@Nullable String messageOrKey) {
+        if (messageOrKey == null) {
+            return resolveMessageOrDefault("validation.request.failed", "Request validation failed");
+        }
+        try {
+            var bundle = ResourceBundle.getBundle(MESSAGES_BASENAME, LocaleContextHolder.getLocale());
+            if (bundle.containsKey(messageOrKey)) {
+                return bundle.getString(messageOrKey);
+            }
+        } catch (MissingResourceException ignored) {
+            // fall through to the raw message
+        }
+        return messageOrKey;
     }
 
     @ExceptionHandler(AccessDeniedException.class)

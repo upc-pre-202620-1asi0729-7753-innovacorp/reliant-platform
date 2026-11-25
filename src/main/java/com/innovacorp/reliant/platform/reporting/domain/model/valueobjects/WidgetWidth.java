@@ -1,6 +1,5 @@
 package com.innovacorp.reliant.platform.reporting.domain.model.valueobjects;
 
-import java.util.Arrays;
 
 public enum WidgetWidth {
     HALF, FULL;
@@ -9,7 +8,7 @@ public enum WidgetWidth {
         try {
             return WidgetWidth.valueOf(value.trim().toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new IllegalArgumentException("Width must be one of " + Arrays.toString(values()).toLowerCase());
+            throw new IllegalArgumentException("validation.widget-width.invalid");
         }
     }
 }

@@ -29,14 +29,14 @@ public class Customer extends AbstractDomainAggregateRoot<Customer> {
         this.id = id;
         this.supplierOrganizationId = Objects.requireNonNull(supplierOrganizationId, "supplierOrganizationId must not be null");
         this.linkedAssetOwnerOrganizationId = linkedAssetOwnerOrganizationId;
-        this.legalName = requireText(legalName, "Legal name");
+        this.legalName = requireText(legalName, "validation.customer.legal-name.blank");
         this.ruc = Objects.requireNonNull(ruc, "ruc must not be null");
-        this.mineSite = requireText(mineSite, "Mine site");
+        this.mineSite = requireText(mineSite, "validation.customer.mine-site.blank");
     }
 
     public Customer(RegisterCustomerCommand command) {
         this(null, new OrganizationId(command.supplierOrganizationId()), command.linkedAssetOwnerOrganizationId(),
-             command.legalName(), new Ruc(command.ruc()), command.mineSite());
+                command.legalName(), new Ruc(command.ruc()), command.mineSite());
     }
 
     public static Customer reconstitute(Long id, OrganizationId supplierOrganizationId, Long linkedAssetOwnerOrganizationId, String legalName, Ruc ruc, String mineSite) {
@@ -44,8 +44,8 @@ public class Customer extends AbstractDomainAggregateRoot<Customer> {
     }
 
     public void update(UpdateCustomerCommand command) {
-        this.legalName = requireText(command.legalName(), "Legal name");
-        this.mineSite = requireText(command.mineSite(), "Mine site");
+        this.legalName = requireText(command.legalName(), "validation.customer.legal-name.blank");
+        this.mineSite = requireText(command.mineSite(), "validation.customer.mine-site.blank");
         this.linkedAssetOwnerOrganizationId = command.linkedAssetOwnerOrganizationId();
     }
 
@@ -63,8 +63,8 @@ public class Customer extends AbstractDomainAggregateRoot<Customer> {
 
     public void onCreated() { registerDomainEvent(CustomerRegisteredEvent.from(this)); }
 
-    private static String requireText(String value, String label) {
-        if (value == null || value.isBlank()) throw new IllegalArgumentException(label + " must not be null or blank");
+    private static String requireText(String value, String messageKey) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException(messageKey);
         return value.trim();
     }
 }

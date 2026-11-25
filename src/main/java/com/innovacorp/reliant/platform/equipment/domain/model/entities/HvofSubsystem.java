@@ -15,11 +15,11 @@ public class HvofSubsystem {
     private final List<String> parameters;
 
     public HvofSubsystem(SubsystemType subsystemType, String name, String alias, List<String> parameters) {
-        if (name == null || name.isBlank()) throw new IllegalArgumentException("Subsystem name must not be blank");
-        if (alias == null || alias.isBlank()) throw new IllegalArgumentException("Subsystem alias must not be blank");
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("validation.hvof-subsystem.name.blank");
+        if (alias == null || alias.isBlank()) throw new IllegalArgumentException("validation.hvof-subsystem.alias.blank");
         var cleaned = (parameters == null ? List.<String>of() : parameters).stream().map(String::trim).distinct().toList();
         if (cleaned.stream().anyMatch(p -> !p.matches("^[a-z][a-z0-9_]{2,39}$"))) {
-            throw new IllegalArgumentException("Parameter names must be snake_case, e.g. fuel_gas_flow");
+            throw new IllegalArgumentException("validation.hvof-subsystem.parameter-names.format");
         }
         this.subsystemType = Objects.requireNonNull(subsystemType, "subsystemType must not be null");
         this.name = name.trim();

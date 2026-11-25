@@ -35,9 +35,9 @@ public class HvofSystem extends AbstractDomainAggregateRoot<HvofSystem> {
         this.id = id;
         this.organizationId = Objects.requireNonNull(organizationId, "organizationId must not be null");
         this.code = Objects.requireNonNull(code, "code must not be null");
-        this.serialNumber = requireText(serialNumber, "Serial number");
-        this.systemManufacturer = requireText(systemManufacturer, "System manufacturer");
-        this.systemModel = requireText(systemModel, "System model");
+        this.serialNumber = requireText(serialNumber, "validation.hvof-system.serial-number.blank");
+        this.systemManufacturer = requireText(systemManufacturer, "validation.hvof-system.manufacturer.blank");
+        this.systemModel = requireText(systemModel, "validation.hvof-system.model.blank");
         this.fuelType = Objects.requireNonNull(fuelType, "fuelType must not be null");
         this.status = Objects.requireNonNull(status, "status must not be null");
         this.subsystems = new ArrayList<>(subsystems == null ? List.of() : subsystems);
@@ -74,9 +74,9 @@ public class HvofSystem extends AbstractDomainAggregateRoot<HvofSystem> {
     }
 
     public Controller addController(int controllerNumber, DeviceType deviceType, String serialNumber,
-                                     String manufacturer, String model, String partNumber,
-                                     NetworkEndpoint endpoint, String endpointUrl, String tagCatalogId,
-                                     List<Protocol> protocols) {
+                                    String manufacturer, String model, String partNumber,
+                                    NetworkEndpoint endpoint, String endpointUrl, String tagCatalogId,
+                                    List<Protocol> protocols) {
         if (controllers.stream().anyMatch(c -> c.getControllerNumber() == controllerNumber)) {
             throw new IllegalStateException("Controller number " + controllerNumber + " already exists in this system");
         }
@@ -102,9 +102,9 @@ public class HvofSystem extends AbstractDomainAggregateRoot<HvofSystem> {
         registerDomainEvent(HvofSystemRegisteredEvent.from(this));
     }
 
-    private static String requireText(String value, String label) {
+    private static String requireText(String value, String messageKey) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(label + " must not be null or blank");
+            throw new IllegalArgumentException(messageKey);
         }
         return value.trim();
     }

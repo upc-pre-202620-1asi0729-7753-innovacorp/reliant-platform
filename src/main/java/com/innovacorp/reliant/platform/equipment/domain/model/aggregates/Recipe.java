@@ -36,16 +36,16 @@ public class Recipe extends AbstractDomainAggregateRoot<Recipe> {
             List<RecipeParameter> parameters
     ) {
         if (hvofSystemId == null) {
-            throw new IllegalArgumentException("HVOF system id is required");
+            throw new IllegalArgumentException("validation.recipe.hvof-system-id.required");
         }
         if (recipeNumber == null || recipeNumber <= 0) {
-            throw new IllegalArgumentException("Recipe number must be positive");
+            throw new IllegalArgumentException("validation.recipe-number.positive");
         }
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Recipe name is required");
+            throw new IllegalArgumentException("validation.recipe.name.blank");
         }
         if (powderSpecification == null || powderSpecification.isBlank()) {
-            throw new IllegalArgumentException("Powder specification is required");
+            throw new IllegalArgumentException("validation.recipe.powder-specification.blank");
         }
 
         this.hvofSystemId = hvofSystemId;
@@ -147,9 +147,7 @@ public class Recipe extends AbstractDomainAggregateRoot<Recipe> {
         return parameters.stream()
                 .filter(item -> item.getParameter().equals(parameter))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Parameter not found: " + parameter
-                ));
+                .orElseThrow(() -> new IllegalArgumentException("validation.recipe.parameter.not-found"));
     }
 
     public Long getHvofSystemIdValue() {

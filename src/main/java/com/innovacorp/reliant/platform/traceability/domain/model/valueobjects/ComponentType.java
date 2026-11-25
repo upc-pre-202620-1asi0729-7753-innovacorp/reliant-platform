@@ -1,6 +1,5 @@
 package com.innovacorp.reliant.platform.traceability.domain.model.valueobjects;
 
-import java.util.Arrays;
 
 public enum ComponentType {
     HYDRAULIC_ROD, CYLINDER_BLOCK, SHAFT, IMPELLER, OTHER;
@@ -9,7 +8,7 @@ public enum ComponentType {
         try {
             return ComponentType.valueOf(value.trim().toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new IllegalArgumentException("Component type must be one of " + Arrays.toString(values()));
+            throw new IllegalArgumentException("validation.component-type.invalid");
         }
     }
 }

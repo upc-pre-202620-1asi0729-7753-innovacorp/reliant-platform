@@ -25,10 +25,10 @@ public class ProcessReading {
 
     public ProcessReading(Long spraySessionId, long epochMillis, long plcClockOffsetMillis, String tagPath, String parameter, Long subsystemId, Long partId,
                           double value, String unitSymbol, String unitCategory, Band band, boolean derived, boolean mappingPending) {
-        if (spraySessionId == null || spraySessionId <= 0) throw new IllegalArgumentException("Spray session id must be positive");
-        if (epochMillis <= 0) throw new IllegalArgumentException("epochMillis must be positive");
-        if (tagPath == null || tagPath.isBlank()) throw new IllegalArgumentException("tagPath must not be blank");
-        if (parameter == null || parameter.isBlank()) throw new IllegalArgumentException("parameter must not be blank");
+        if (spraySessionId == null || spraySessionId <= 0) throw new IllegalArgumentException("validation.spray-session-id.positive");
+        if (epochMillis <= 0) throw new IllegalArgumentException("validation.process-reading.epoch-millis.positive");
+        if (tagPath == null || tagPath.isBlank()) throw new IllegalArgumentException("validation.process-reading.tag-path.blank");
+        if (parameter == null || parameter.isBlank()) throw new IllegalArgumentException("validation.process-reading.parameter.blank");
         this.spraySessionId = spraySessionId;
         this.epochMillis = epochMillis;
         this.plcClockOffsetMillis = plcClockOffsetMillis;

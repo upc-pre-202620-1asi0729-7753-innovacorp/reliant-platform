@@ -1,6 +1,5 @@
 package com.innovacorp.reliant.platform.equipment.domain.model.valueobjects;
 
-import java.util.Arrays;
 
 /**
  * Fuel used by the HVOF gun.
@@ -12,7 +11,7 @@ public enum FuelType {
         try {
             return FuelType.valueOf(value.trim().toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new IllegalArgumentException("Fuel type must be one of " + Arrays.toString(values()));
+            throw new IllegalArgumentException("validation.fuel-type.invalid");
         }
     }
 }

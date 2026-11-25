@@ -1,6 +1,5 @@
 package com.innovacorp.reliant.platform.reporting.domain.model.valueobjects;
 
-import java.util.Arrays;
 
 /** Where a widget takes its data from: process readings, the session, the recuperation order or the fault cases. */
 public enum VariableSource {
@@ -10,7 +9,7 @@ public enum VariableSource {
         try {
             return VariableSource.valueOf(value.trim().toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new IllegalArgumentException("Variable source must be one of " + Arrays.toString(values()).toLowerCase());
+            throw new IllegalArgumentException("validation.variable-source.invalid");
         }
     }
 }

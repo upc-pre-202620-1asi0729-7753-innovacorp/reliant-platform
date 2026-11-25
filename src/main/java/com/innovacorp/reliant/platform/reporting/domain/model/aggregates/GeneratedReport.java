@@ -33,10 +33,10 @@ public class GeneratedReport extends AbstractDomainAggregateRoot<GeneratedReport
 
     public GeneratedReport(Long id, Long reportTemplateId, OrganizationId organizationId, Long generatedByUserId, ReportSubjectType subjectType, Long subjectId,
                            String format, String fileName, LocalDate periodFrom, LocalDate periodTo, Date generatedAt) {
-        if (reportTemplateId == null || reportTemplateId <= 0) throw new IllegalArgumentException("Report template id must be positive");
-        if (subjectId == null || subjectId <= 0) throw new IllegalArgumentException("Subject id must be positive");
-        if (fileName == null || fileName.isBlank()) throw new IllegalArgumentException("File name must not be blank");
-        if (periodFrom != null && periodTo != null && periodTo.isBefore(periodFrom)) throw new IllegalArgumentException("The period end cannot precede its start");
+        if (reportTemplateId == null || reportTemplateId <= 0) throw new IllegalArgumentException("validation.generated-report.template-id.positive");
+        if (subjectId == null || subjectId <= 0) throw new IllegalArgumentException("validation.generated-report.subject-id.positive");
+        if (fileName == null || fileName.isBlank()) throw new IllegalArgumentException("validation.generated-report.file-name.blank");
+        if (periodFrom != null && periodTo != null && periodTo.isBefore(periodFrom)) throw new IllegalArgumentException("validation.generated-report.period.invalid");
         this.id = id;
         this.reportTemplateId = reportTemplateId;
         this.organizationId = Objects.requireNonNull(organizationId, "organizationId must not be null");

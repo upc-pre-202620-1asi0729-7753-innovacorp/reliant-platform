@@ -25,7 +25,7 @@ public class Organization extends AbstractDomainAggregateRoot<Organization> {
 
     public Organization(Long id, String legalName, Ruc ruc, OrganizationType organizationType, OrganizationStatus status) {
         if (legalName == null || legalName.isBlank()) {
-            throw new IllegalArgumentException("Organization legal name must not be blank");
+            throw new IllegalArgumentException("validation.organization.legal-name.blank");
         }
         this.id = id;
         this.legalName = legalName.trim();
