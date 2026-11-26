@@ -16,5 +16,7 @@ public interface CustomerRepository {
 
     List<Customer> findAllByLinkedAssetOwnerOrganizationId(Long assetOwnerOrganizationId);
 
+    List<Customer> findAllByRuc(Ruc ruc);
+
     boolean existsBySupplierOrganizationIdAndRuc(OrganizationId supplierOrganizationId, Ruc ruc);
 }
