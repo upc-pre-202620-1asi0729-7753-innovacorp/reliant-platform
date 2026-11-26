@@ -53,6 +53,11 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     @Override
+    public List<Customer> findAllByRuc(Ruc ruc) {
+        return persistenceRepository.findAllByRuc(ruc).stream().map(CustomerPersistenceAssembler::toDomainFromPersistence).toList();
+    }
+
+    @Override
     public boolean existsBySupplierOrganizationIdAndRuc(OrganizationId supplierOrganizationId, Ruc ruc) {
         return persistenceRepository.countBySupplierOrganizationIdAndRuc(supplierOrganizationId, ruc) > 0;
     }
