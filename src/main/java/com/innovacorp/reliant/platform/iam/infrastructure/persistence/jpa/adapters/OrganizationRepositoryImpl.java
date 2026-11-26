@@ -42,4 +42,9 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     public Optional<Organization> findById(Long id) {
         return persistenceRepository.findById(id).map(OrganizationPersistenceAssembler::toDomainFromPersistence);
     }
+
+    @Override
+    public Optional<Organization> findByRuc(Ruc ruc) {
+        return persistenceRepository.findByRuc(ruc).map(OrganizationPersistenceAssembler::toDomainFromPersistence);
+    }
 }

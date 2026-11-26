@@ -18,6 +18,9 @@ public interface CustomerPersistenceRepository extends JpaRepository<CustomerPer
 
     List<CustomerPersistenceEntity> findAllByLinkedAssetOwnerOrganizationIdOrderByLegalName(Long linkedAssetOwnerOrganizationId);
 
+    @Query("select c from CustomerPersistenceEntity c where c.ruc = :ruc")
+    List<CustomerPersistenceEntity> findAllByRuc(@Param("ruc") Ruc ruc);
+
     @Query("select count(c) from CustomerPersistenceEntity c where c.supplierOrganizationId = :supplierOrganizationId and c.ruc = :ruc")
     long countBySupplierOrganizationIdAndRuc(@Param("supplierOrganizationId") OrganizationId supplierOrganizationId, @Param("ruc") Ruc ruc);
 }

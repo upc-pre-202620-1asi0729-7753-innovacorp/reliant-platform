@@ -7,9 +7,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface OrganizationPersistenceRepository extends JpaRepository<OrganizationPersistenceEntity, Long> {
 
     @Query("select count(o) from OrganizationPersistenceEntity o where o.ruc = :ruc")
     long countByRuc(@Param("ruc") Ruc ruc);
+
+    @Query("select o from OrganizationPersistenceEntity o where o.ruc = :ruc")
+    Optional<OrganizationPersistenceEntity> findByRuc(@Param("ruc") Ruc ruc);
 }
