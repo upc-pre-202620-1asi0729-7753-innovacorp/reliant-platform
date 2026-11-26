@@ -47,6 +47,15 @@ public class Customer extends AbstractDomainAggregateRoot<Customer> {
         this.linkedAssetOwnerOrganizationId = command.linkedAssetOwnerOrganizationId();
     }
 
+    /** Links the customer to the asset-owner organization that signed up with its RUC. Idempotent. */
+    public void linkAssetOwner(Long assetOwnerOrganizationId) {
+        this.linkedAssetOwnerOrganizationId = Objects.requireNonNull(assetOwnerOrganizationId, "assetOwnerOrganizationId must not be null");
+    }
+
+    public boolean isLinked() {
+        return linkedAssetOwnerOrganizationId != null;
+    }
+
     public boolean isOwnedBy(Long organizationId) {
         return supplierOrganizationId.organizationId().equals(organizationId);
     }
